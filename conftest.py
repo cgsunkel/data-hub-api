@@ -194,7 +194,7 @@ def _es_client(worker_id):
     settings.ES_INDEX_PREFIX = f'test_{worker_id}'
 
     from elasticsearch_dsl.connections import connections
-    client = get_test_client(nowait=False)
+    client = get_test_client(nowait=True)
     connections.add_connection('default', client)
     yield client
 
