@@ -7,6 +7,7 @@ from datahub.company.models import (
     Company,
     CompanyExportCountry,
     CompanyExportCountryHistory,
+    CompanyExportOverseasRegion,
     Contact,
 )
 from datahub.company_referral.models import CompanyReferral
@@ -37,6 +38,7 @@ ALLOWED_RELATIONS_FOR_MERGING = {
     # the front end if required)
     CompanyExportCountry.company.field,
     CompanyExportCountryHistory.company.field,
+    CompanyExportOverseasRegion.company.field,
 }
 
 

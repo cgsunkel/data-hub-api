@@ -19,6 +19,7 @@ from datahub.company.models import (
 from datahub.company.queryset import (
     get_contact_queryset,
     get_export_country_queryset,
+    get_export_region_queryset,
 )
 from datahub.company.serializers import (
     AdviserSerializer,
@@ -87,6 +88,7 @@ class CompanyViewSet(ArchivableViewSetMixin, CoreViewSet):
         'sector__parent',
         'sector',
         Prefetch('export_countries', queryset=get_export_country_queryset()),
+        Prefetch('export_regions', queryset=get_export_region_queryset()),
     )
 
     @action(

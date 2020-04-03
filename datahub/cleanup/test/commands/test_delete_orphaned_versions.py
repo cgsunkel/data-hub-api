@@ -12,6 +12,7 @@ from datahub.cleanup.management.commands import delete_orphaned_versions
 from datahub.company.test.factories import (
     AdviserFactory,
     CompanyExportCountryFactory,
+    CompanyExportRegionFactory,
     CompanyFactory,
     ContactFactory,
 )
@@ -30,6 +31,7 @@ MAPPINGS = {
     'company.Advisor': AdviserFactory,
     'company.Company': CompanyFactory,
     'company.CompanyExportCountry': CompanyExportCountryFactory,
+    'company.CompanyExportOverseasRegion': CompanyExportRegionFactory,
     'company.Contact': ContactFactory,
     'event.Event': EventFactory,
     'interaction.Interaction': CompanyInteractionFactory,

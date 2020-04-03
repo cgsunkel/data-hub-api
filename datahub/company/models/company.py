@@ -474,6 +474,45 @@ class Company(ArchivableModel, BaseModel):
             )
             export_country.delete()
 
+    @transaction.atomic
+    def add_export_region(self, region, status, record_date, adviser):
+        """
+        Add a company export_region, if it doesn't exist.
+        If the company already exists and incoming status is different
+        check if incoming record is newer and update.
+        Tracking history is out of scope.
+        """
+        export_region, created = CompanyExportOverseasRegion.objects.get_or_create(
+            region=region,
+            company=self,
+            defaults={
+                'status': status,
+                'created_by': adviser,
+                'modified_by': adviser,
+            },
+        )
+
+        if not created:
+            if export_region.status != status and export_region.modified_on < record_date:
+                export_region.status = status
+                export_region.modified_by = adviser
+                export_region.save()
+
+    @transaction.atomic
+    def delete_export_region(self, region_id, adviser):
+        """
+        Delete export region.
+        Tracking history is out of scope.
+        """
+        export_region = self.export_regions.filter(region_id=region_id).first()
+        if export_region:
+            export_country_delete_signal.send(
+                sender=CompanyExportCountry,
+                instance=export_region,
+                by=adviser,
+            )
+            export_region.delete()
+
 
 class OneListCoreTeamMember(models.Model):
     """
@@ -574,6 +613,56 @@ class CompanyExportCountry(BaseModel):
         """Admin displayed human readable name"""
         return (
             f'{self.company} {self.country} {self.status}'
+        )
+
+
+@reversion.register_base_model()
+class CompanyExportOverseasRegion(BaseModel):
+    """
+    Record `Company`'s exporting status to a `OverseasRegion`.
+    Status is expressed as:
+        - 'currently exporting to'
+        - 'future interest'
+        - 'not interested'
+    """
+
+    class Status(models.TextChoices):
+        NOT_INTERESTED = ('not_interested', 'Not interested')
+        CURRENTLY_EXPORTING = ('currently_exporting', 'Currently exporting to')
+        FUTURE_INTEREST = ('future_interest', 'Future country of interest')
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    region = models.ForeignKey(
+        metadata_models.OverseasRegion,
+        on_delete=models.PROTECT,
+        related_name='companies_with_interest',
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='export_regions',
+    )
+    status = models.CharField(
+        max_length=settings.CHAR_FIELD_MAX_LENGTH,
+        choices=Status.choices,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['region', 'company'],
+                name='unique_region_company',
+            ),
+        ]
+        verbose_name_plural = 'company export region'
+
+    def __str__(self):
+        """Admin displayed human readable name"""
+        return (
+            f'{self.company} {self.region} {self.status}'
         )
 
 

@@ -14,6 +14,7 @@ from datahub.company.models import (
     Company,
     CompanyExportCountry,
     CompanyExportCountryHistory,
+    CompanyExportOverseasRegion,
     CompanyPermission,
     OneListTier,
 )
@@ -22,6 +23,7 @@ from datahub.company.test.factories import (
     AdviserFactory,
     CompanyExportCountryFactory,
     CompanyExportCountryHistoryFactory,
+    CompanyExportRegionFactory,
     CompanyFactory,
 )
 from datahub.core.constants import Country, EmployeeRange, HeadquarterType, TurnoverRange
@@ -30,7 +32,10 @@ from datahub.core.test_utils import (
     create_test_user,
     format_date_or_datetime,
 )
-from datahub.metadata.models import Country as CountryModel
+from datahub.metadata.models import (
+    Country as CountryModel,
+    OverseasRegion,
+)
 from datahub.metadata.test.factories import TeamFactory
 
 
@@ -1977,6 +1982,159 @@ class TestCompaniesToCompanyExportCountryModel(APITestMixin):
         assert delete_history.count() == 1
         assert delete_history[0].country == country
         assert delete_history[0].history_user == new_user
+
+
+class TestCompaniesToCompanyExportOverseasRegionModel(APITestMixin):
+    """
+    Tests all operations on export regions on Company model.
+    """
+
+    def _get_export_interest_status(self):
+        """Helper function to randomly select export status"""
+        export_interest_statuses = [
+            CompanyExportOverseasRegion.Status.CURRENTLY_EXPORTING,
+            CompanyExportOverseasRegion.Status.FUTURE_INTEREST,
+            CompanyExportOverseasRegion.Status.NOT_INTERESTED,
+        ]
+        return random.choice(export_interest_statuses)
+
+    def test_get_company_with_export_regions(self):
+        """
+        Tests the company response has export regions that are
+        in the CompanyExportOverseasRegion model.
+        """
+        company = CompanyFactory()
+        export_region_one, export_region_two = CompanyExportRegionFactory.create_batch(2)
+        company.export_regions.set([export_region_one, export_region_two])
+        user = create_test_user(
+            permission_codenames=(
+                'view_company',
+                'view_companyexportcountry',
+            ),
+        )
+        api_client = self.create_api_client(user=user)
+
+        url = reverse('api-v4:company:item', kwargs={'pk': company.id})
+        response = api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json().get('export_regions', []) is not []
+        export_countries_response = response.json().get('export_regions')
+        assert export_countries_response == [
+            {
+                'region': {
+                    'id': str(item.region.pk),
+                    'name': item.region.name,
+                },
+                'status': item.status,
+            } for item in company.export_regions.order_by('pk')
+        ]
+
+    def test_update_company_export_regions(self):
+        """
+        Test updating company export regions.
+        """
+        company = CompanyFactory()
+        new_regions = list(OverseasRegion.objects.order_by('id')[:3])
+
+        input_data_items = [
+            {
+                'region': {
+                    'id': str(region.id),
+                    'name': region.name,
+                },
+                'status': self._get_export_interest_status(),
+            }
+            for region in new_regions
+        ]
+        input_export_regions = {
+            'export_regions': input_data_items,
+        }
+
+        url = reverse('api-v4:company:update-export-detail', kwargs={'pk': company.pk})
+        response = self.api_client.patch(url, data=input_export_regions)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+        company.refresh_from_db()
+        company_data_items = [
+            {
+                'region': {
+                    'id': str(export_region.region.id),
+                    'name': export_region.region.name,
+                },
+                'status': export_region.status,
+            }
+            for export_region in company.export_regions.all().order_by('region__id')
+        ]
+        company_export_regions = {
+            'export_regions': company_data_items,
+        }
+        assert company_export_regions == input_export_regions
+
+    def test_update_company_export_regions_and_countries(self):
+        """
+        Test updating company export regions.
+        """
+        company = CompanyFactory()
+        new_regions = list(OverseasRegion.objects.order_by('id')[:3])
+        new_countries = list(CountryModel.objects.order_by('id')[:3])
+
+        input_country_items = [
+            {
+                'country': {
+                    'id': str(country.id),
+                    'name': country.name,
+                },
+                'status': self._get_export_interest_status(),
+            }
+            for country in new_countries
+        ]
+
+        input_region_items = [
+            {
+                'region': {
+                    'id': str(region.id),
+                    'name': region.name,
+                },
+                'status': self._get_export_interest_status(),
+            }
+            for region in new_regions
+        ]
+        input_export_details = {
+            'export_countries': input_country_items,
+            'export_regions': input_region_items,
+        }
+
+        url = reverse('api-v4:company:update-export-detail', kwargs={'pk': company.pk})
+        response = self.api_client.patch(url, data=input_export_details)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+        company.refresh_from_db()
+        company_country_items = [
+            {
+                'country': {
+                    'id': str(export_country.country.id),
+                    'name': export_country.country.name,
+                },
+                'status': export_country.status,
+            }
+            for export_country in company.export_countries.all().order_by('country__id')
+        ]
+        company_region_items = [
+            {
+                'region': {
+                    'id': str(export_region.region.id),
+                    'name': export_region.region.name,
+                },
+                'status': export_region.status,
+            }
+            for export_region in company.export_regions.all().order_by('region__id')
+        ]
+        company_export_regions = {
+            'export_countries': company_country_items,
+            'export_regions': company_region_items,
+        }
+        assert company_export_regions == input_export_details
 
 
 class TestGetCompanyExportWins(APITestMixin):

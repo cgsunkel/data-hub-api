@@ -16,6 +16,7 @@ from datahub.company.models import (
     Advisor,
     Company,
     CompanyExportCountry,
+    CompanyExportOverseasRegion,
     CompanyPermission,
     Contact,
     ContactPermission,
@@ -267,6 +268,18 @@ class CompanyExportCountrySerializer(serializers.ModelSerializer):
         fields = ('country', 'status')
 
 
+class CompanyExportRegionSerializer(serializers.ModelSerializer):
+    """
+    Export region serializer holding `OverseasRegion` and its status.
+    """
+
+    region = NestedRelatedField(meta_models.OverseasRegion)
+
+    class Meta:
+        model = CompanyExportOverseasRegion
+        fields = ('region', 'status')
+
+
 class CompanySerializer(PermittedFieldsModelSerializer):
     """
     Base Company read/write serializer
@@ -341,6 +354,7 @@ class CompanySerializer(PermittedFieldsModelSerializer):
     )
     address = AddressSerializer(source_model=Company, address_source_prefix='address')
     export_countries = CompanyExportCountrySerializer(many=True, read_only=True)
+    export_regions = CompanyExportRegionSerializer(many=True, read_only=True)
 
     # Use our RelaxedURLField instead to automatically fix URLs without a scheme
     serializer_field_mapping = {
@@ -490,6 +504,7 @@ class CompanySerializer(PermittedFieldsModelSerializer):
             'global_ultimate_duns_number',
             'dnb_modified_on',
             'export_countries',
+            'export_regions',
         )
         read_only_fields = (
             'archived',
@@ -510,6 +525,7 @@ class CompanySerializer(PermittedFieldsModelSerializer):
             'global_ultimate_duns_number',
             'dnb_modified_on',
             'export_countries',
+            'export_regions',
         )
         dnb_read_only_fields = (
             'name',
@@ -573,6 +589,7 @@ class CompanySerializer(PermittedFieldsModelSerializer):
         permissions = {
             f'company.{CompanyPermission.view_company_document}': 'archived_documents_url_path',
             f'company.view_companyexportcountry': 'export_countries',
+            f'company.view_companyexportcountry': 'export_regions',
         }
 
 
@@ -659,9 +676,13 @@ class UpdateExportDetailsSerializer(serializers.Serializer):
         'duplicate_export_country': gettext_lazy(
             'You cannot enter the same country in multiple fields.',
         ),
+        'duplicate_export_region': gettext_lazy(
+            'You cannot enter the same region in multiple fields.',
+        ),
     }
 
     export_countries = CompanyExportCountrySerializer(many=True, required=True)
+    export_regions = CompanyExportRegionSerializer(many=True, required=True)
 
     def validate(self, data):
         """
@@ -677,6 +698,12 @@ class UpdateExportDetailsSerializer(serializers.Serializer):
         if len(countries) > len(set(countries)):
             raise serializers.ValidationError(self.error_messages['duplicate_export_country'])
 
+        # check for duplicate regions
+        export_regions = data.get('export_regions', [])
+        regions = [item['region'] for item in export_regions]
+        if len(regions) > len(set(regions)):
+            raise serializers.ValidationError(self.error_messages['duplicate_export_region'])
+
         return data
 
     @transaction.atomic
@@ -684,6 +711,9 @@ class UpdateExportDetailsSerializer(serializers.Serializer):
         """Save it"""
         export_countries = self.validated_data.pop('export_countries', [])
         self._update_export_countries_model(self.instance, export_countries, adviser)
+
+        export_regions = self.validated_data.pop('export_regions', [])
+        self._update_export_regions_model(self.instance, export_regions, adviser)
 
     def _update_export_countries_model(self, company, validated_export_countries, adviser):
         """
@@ -709,6 +739,28 @@ class UpdateExportDetailsSerializer(serializers.Serializer):
             company.delete_export_country(country_id, adviser)
 
         self._sync_to_company_export_country_fields(company, adviser)
+
+    def _update_export_regions_model(self, company, validated_export_regions, adviser):
+        """
+        Adds/updates export regions related to a company within validated_export_regions.
+        And removes existing ones that are not in the list.
+        """
+        for item in validated_export_regions:
+            region = meta_models.OverseasRegion.objects.get(id=item['region'].id)
+            status = item['status']
+            company.add_export_region(
+                region=region,
+                status=status,
+                record_date=company.modified_on,
+                adviser=adviser,
+            )
+
+        existing_region_ids = [item.region.id for item in company.export_regions.all()]
+        new_region_ids = [item['region'].id for item in validated_export_regions]
+        region_ids_delta = list(set(existing_region_ids) - set(new_region_ids))
+
+        for region_id in region_ids_delta:
+            company.delete_export_region(region_id, adviser)
 
     def _sync_to_company_export_country_fields(self, company, adviser):
         """

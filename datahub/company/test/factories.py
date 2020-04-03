@@ -11,6 +11,7 @@ from datahub.company.models import (
     Company,
     CompanyExportCountry,
     CompanyExportCountryHistory,
+    CompanyExportOverseasRegion,
     ExportExperienceCategory,
 )
 from datahub.core import constants
@@ -20,6 +21,7 @@ from datahub.metadata.models import (
     Country,
     EmployeeRange,
     HeadquarterType,
+    OverseasRegion,
     TurnoverRange,
 )
 from datahub.metadata.test.factories import TeamFactory
@@ -201,6 +203,18 @@ class CompanyExportCountryFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'company.CompanyExportCountry'
+
+
+class CompanyExportRegionFactory(factory.django.DjangoModelFactory):
+    """Factory for Company export region"""
+
+    company = factory.SubFactory(CompanyFactory)
+    region = factory.Iterator(OverseasRegion.objects.all())
+    status = CompanyExportOverseasRegion.Status.CURRENTLY_EXPORTING
+    created_by = factory.SubFactory(AdviserFactory)
+
+    class Meta:
+        model = 'company.CompanyExportOverseasRegion'
 
 
 class CompanyExportCountryHistoryFactory(factory.django.DjangoModelFactory):
