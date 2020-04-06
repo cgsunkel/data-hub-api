@@ -506,11 +506,6 @@ class Company(ArchivableModel, BaseModel):
         """
         export_region = self.export_regions.filter(region_id=region_id).first()
         if export_region:
-            export_country_delete_signal.send(
-                sender=CompanyExportCountry,
-                instance=export_region,
-                by=adviser,
-            )
             export_region.delete()
 
 
