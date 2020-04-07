@@ -71,6 +71,7 @@ class Command(BaseCleanupCommand):
                 Company._meta.get_field('company_list_items'),
                 Company._meta.get_field('export_countries'),
                 Company._meta.get_field('export_countries_history'),
+                Company._meta.get_field('export_regions'),
             ),
         ),
         # There were multiple large bulk updates of contacts in the legacy system on and just

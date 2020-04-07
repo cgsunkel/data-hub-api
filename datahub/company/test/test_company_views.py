@@ -370,6 +370,7 @@ class TestGetCompany(APITestMixin):
                 },
             },
             'export_countries': [],
+            'export_regions': [],
             'archived_documents_url_path': company.archived_documents_url_path,
             'archived': False,
             'archived_by': None,

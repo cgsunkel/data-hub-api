@@ -442,6 +442,7 @@ class TestDNBCompanyCreateAPI(APITestMixin):
             ),
             'dnb_modified_on': '2019-01-01T11:12:13Z',
             'export_countries': [],
+            'export_regions': [],
         }
 
     @override_settings(DNB_SERVICE_BASE_URL=None)
