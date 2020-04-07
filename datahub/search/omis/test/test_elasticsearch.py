@@ -1,5 +1,6 @@
 import pytest
 from elasticsearch_dsl import Mapping
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.omis.order.test.factories import (
     OrderCancelledFactory,
@@ -17,10 +18,10 @@ pytestmark = pytest.mark.django_db
 
 def test_mapping(es):
     """Test the ES mapping for an order."""
-    mapping = Mapping.from_es(OrderSearchApp.es_model.get_write_index(), OrderSearchApp.name)
+    mapping = Mapping.from_es(OrderSearchApp.es_model.get_write_index(), DEFAULT_DOC_TYPE)
 
     assert mapping.to_dict() == {
-        'order': {
+        DEFAULT_DOC_TYPE: {
             'dynamic': 'false',
             'properties': {
                 '_document_type': {
@@ -507,7 +508,7 @@ def test_indexed_doc(order_factory, es):
 
     indexed_order = es.get(
         index=OrderSearchApp.es_model.get_write_index(),
-        doc_type=OrderSearchApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=order.pk,
     )
 

@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.company.models import Company
 from datahub.company.test.factories import CompanyFactory
@@ -89,7 +90,7 @@ def test_sync_app_uses_latest_data(monkeypatch, es):
     company = mock_sync_objects.call_args_list[1][0][1][0]
     fetched_company = es.get(
         index=CompanySearchApp.es_model.get_read_alias(),
-        doc_type=CompanySearchApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=company.pk,
     )
     assert fetched_company['_source']['name'] == 'new name'

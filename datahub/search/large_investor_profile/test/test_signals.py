@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 from elasticsearch.exceptions import NotFoundError
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.company.test.factories import CompanyFactory
 from datahub.investment.investor_profile.test.factories import LargeCapitalInvestorProfileFactory
@@ -13,7 +14,7 @@ pytestmark = pytest.mark.django_db
 def _get_es_document(setup_es, pk):
     return setup_es.get(
         index=LargeInvestorProfileSearchApp.es_model.get_read_alias(),
-        doc_type=LargeInvestorProfileSearchApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=pk,
     )
 

@@ -3,6 +3,7 @@ from logging import getLogger
 
 from django.conf import settings
 from elasticsearch_dsl import Document, Keyword, MetaField
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.core.exceptions import DataHubException
 from datahub.search.apps import get_search_app_by_search_model
@@ -146,7 +147,7 @@ class BaseESModel(Document):
         aren't required (e.g. when using `datahub.search.deletion.delete_documents()`).
         """
         doc = {
-            '_type': cls._doc_type.name,
+            '_type': DEFAULT_DOC_TYPE,
             '_id': db_object.pk,
         }
 

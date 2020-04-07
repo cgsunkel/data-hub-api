@@ -1,5 +1,6 @@
 import pytest
 from elasticsearch_dsl import Mapping
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.company.test.factories import CompanyFactory
 from datahub.search.company import CompanySearchApp
@@ -16,10 +17,10 @@ def test_mapping(es):
     """Test the ES mapping for a company."""
     mapping = Mapping.from_es(
         CompanySearchApp.es_model.get_write_index(),
-        CompanySearchApp.name,
+        DEFAULT_DOC_TYPE,
     )
     assert mapping.to_dict() == {
-        'company': {
+        DEFAULT_DOC_TYPE: {
             'dynamic': 'false',
             'properties': {
                 '_document_type': {
@@ -533,7 +534,7 @@ def test_indexed_doc(es):
 
     indexed_company = es.get(
         index=CompanySearchApp.es_model.get_write_index(),
-        doc_type=CompanySearchApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=company.pk,
     )
 

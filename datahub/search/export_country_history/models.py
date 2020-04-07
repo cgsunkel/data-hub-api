@@ -3,8 +3,6 @@ from elasticsearch_dsl import Date, Keyword
 from datahub.search import dict_utils, fields
 from datahub.search.models import BaseESModel
 
-DOC_TYPE = 'export-country-history'
-
 
 class ExportCountryHistory(BaseESModel):
     """Elasticsearch representation of CompanyExportCountryHistory model."""
@@ -31,11 +29,3 @@ class ExportCountryHistory(BaseESModel):
         'id': lambda obj: obj.history_id,  # Id required for indexing
         'date': lambda obj: obj.history_date,
     }
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DOC_TYPE
-
-    class Index:
-        doc_type = DOC_TYPE

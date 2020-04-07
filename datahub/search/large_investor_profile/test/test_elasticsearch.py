@@ -1,6 +1,7 @@
 import freezegun
 import pytest
 from elasticsearch_dsl import Mapping
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.company.test.factories import CompanyFactory
 from datahub.investment.investor_profile.test.factories import LargeCapitalInvestorProfileFactory
@@ -18,10 +19,10 @@ def test_mapping(es):
     """Test the ES mapping for a large capital investor profile."""
     mapping = Mapping.from_es(
         LargeInvestorProfileSearchApp.es_model.get_write_index(),
-        LargeInvestorProfileSearchApp.name,
+        DEFAULT_DOC_TYPE,
     )
     assert mapping.to_dict() == {
-        'large-investor-profile': {
+        DEFAULT_DOC_TYPE: {
             'properties': {
                 '_document_type': {
                     'type': 'keyword',
@@ -320,7 +321,7 @@ def test_indexed_doc(es):
 
     indexed_large_investor_profile = es.get(
         index=ESLargeInvestorProfile.get_write_index(),
-        doc_type=LargeInvestorProfileSearchApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=large_investor_profile.pk,
     )
 

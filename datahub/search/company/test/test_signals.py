@@ -1,5 +1,6 @@
 import pytest
 from dateutil.parser import parse as dateutil_parse
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.company.test.factories import AdviserFactory, CompanyFactory
 from datahub.interaction.test.factories import CompanyInteractionFactory
@@ -102,7 +103,7 @@ def test_adding_interaction_updates_company(es_with_signals):
 
     doc = es_with_signals.get(
         index=CompanySearchApp.es_model.get_read_alias(),
-        doc_type=CompanySearchApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=company.pk,
     )
     assert doc['_source']['name'] == test_name
@@ -117,7 +118,7 @@ def test_adding_interaction_updates_company(es_with_signals):
 
     updated_doc = es_with_signals.get(
         index=CompanySearchApp.es_model.get_read_alias(),
-        doc_type=CompanySearchApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=company.pk,
     )
     assert updated_doc['_source']['name'] == test_name

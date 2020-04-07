@@ -5,9 +5,6 @@ from datahub.search import fields
 from datahub.search.models import BaseESModel
 
 
-DOC_TYPE = 'investment_project'
-
-
 def _related_investment_project_field():
     """Field for a related investment project."""
     return Object(properties={
@@ -183,11 +180,3 @@ class InvestmentProject(BaseESModel):
         'investor_company.name.trigram',
         'project_code.trigram',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DOC_TYPE
-
-    class Index:
-        doc_type = DOC_TYPE

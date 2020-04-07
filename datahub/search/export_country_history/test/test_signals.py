@@ -1,4 +1,5 @@
 import pytest
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.company.models import CompanyExportCountryHistory
 from datahub.company.test.factories import CompanyExportCountryHistoryFactory
@@ -14,7 +15,7 @@ def test_new_export_country_history_synced(es_with_signals):
 
     assert es_with_signals.get(
         index=ExportCountryHistoryApp.es_model.get_write_index(),
-        doc_type=ExportCountryHistoryApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=company_export_country_history.pk,
     )
 
@@ -31,7 +32,7 @@ def test_updated_interaction_synced(es_with_signals):
 
     result = es_with_signals.get(
         index=ExportCountryHistoryApp.es_model.get_write_index(),
-        doc_type=ExportCountryHistoryApp.name,
+        doc_type=DEFAULT_DOC_TYPE,
         id=export_country_history.pk,
     )
 

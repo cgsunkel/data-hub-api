@@ -1,4 +1,5 @@
 from elasticsearch_dsl import Mapping
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.search.contact import ContactSearchApp
 from datahub.search.contact.models import Contact as ESContact
@@ -13,11 +14,11 @@ def test_mapping(es):
     """Test the ES mapping for a contact."""
     mapping = Mapping.from_es(
         ContactSearchApp.es_model.get_write_index(),
-        ContactSearchApp.name,
+        DEFAULT_DOC_TYPE,
     )
 
     assert mapping.to_dict() == {
-        'contact': {
+        DEFAULT_DOC_TYPE: {
             'properties': {
                 '_document_type': {
                     'type': 'keyword',

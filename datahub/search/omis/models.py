@@ -5,9 +5,6 @@ from datahub.search import fields
 from datahub.search.models import BaseESModel
 
 
-DOC_TYPE = 'order'
-
-
 class Order(BaseESModel):
     """Elasticsearch representation of Order model."""
 
@@ -106,11 +103,3 @@ class Order(BaseESModel):
         'total_cost.keyword',
         'subtotal_cost.keyword',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DOC_TYPE
-
-    class Index:
-        doc_type = DOC_TYPE

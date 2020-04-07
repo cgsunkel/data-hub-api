@@ -1,4 +1,5 @@
 from elasticsearch_dsl import Mapping
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.search.investment.models import InvestmentProject as ESInvestmentProject
 from datahub.search.query_builder import (
@@ -12,11 +13,11 @@ def test_mapping(es):
     """Test the ES mapping for an investment project."""
     mapping = Mapping.from_es(
         ESInvestmentProject.get_write_index(),
-        ESInvestmentProject._doc_type.name,
+        DEFAULT_DOC_TYPE,
     )
 
     assert mapping.to_dict() == {
-        'investment_project': {
+        DEFAULT_DOC_TYPE: {
             'dynamic': 'false',
             'properties': {
                 '_document_type': {

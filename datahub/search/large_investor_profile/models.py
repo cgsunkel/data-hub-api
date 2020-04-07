@@ -5,9 +5,6 @@ from datahub.search import fields
 from datahub.search.models import BaseESModel
 
 
-DOC_TYPE = 'large-investor-profile'
-
-
 def _get_adviser_list(col):
     return [dict_utils.contact_or_adviser_dict(c['adviser']) for c in col]
 
@@ -83,11 +80,3 @@ class LargeInvestorProfile(BaseESModel):
         **_REQUIREMENT_FIELD_MAPPINGS,
         **_LOCATION_FIELD_MAPPINGS,
     }
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DOC_TYPE
-
-    class Index:
-        doc_type = DOC_TYPE

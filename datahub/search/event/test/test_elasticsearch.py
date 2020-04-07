@@ -1,4 +1,5 @@
 from elasticsearch_dsl import Mapping
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
 from datahub.search.event import EventSearchApp
 
@@ -7,11 +8,11 @@ def test_mapping(es):
     """Test the ES mapping for an event."""
     mapping = Mapping.from_es(
         EventSearchApp.es_model.get_write_index(),
-        EventSearchApp.name,
+        DEFAULT_DOC_TYPE,
     )
 
     assert mapping.to_dict() == {
-        'event': {
+        DEFAULT_DOC_TYPE: {
             'dynamic': 'false',
             'properties': {
                 '_document_type': {

@@ -2,8 +2,12 @@ import inspect
 
 import pytest
 from django.utils.functional import cached_property
+from elasticsearch_dsl.index import DEFAULT_DOC_TYPE
 
-from datahub.search.test.search_support.models import SimpleModel
+from datahub.search.elasticsearch import bulk
+from datahub.search.test.search_support.models import RelatedModel, SimpleModel
+from datahub.search.test.search_support.relatedmodel import RelatedModelSearchApp
+from datahub.search.test.search_support.relatedmodel.models import ESRelatedModel
 from datahub.search.test.search_support.simplemodel.models import ESSimpleModel
 from datahub.search.utils import get_model_field_names
 
@@ -30,12 +34,30 @@ class TestBaseESModel:
 
         expected_doc = {
             '_id': obj.pk,
-            '_type': 'simplemodel',
+            '_type': DEFAULT_DOC_TYPE,
             **({'_index': ESSimpleModel.get_write_alias()} if include_index else {}),
             **({'_source': source} if include_source else {}),
         }
 
         assert doc == expected_doc
+
+    @pytest.mark.django_db
+    def test_bulk_with_legacy_mapping_type_name(self, es):
+        """Test that it does not."""
+        related_object = RelatedModel.objects.create()
+        doc = ESRelatedModel.es_document(related_object)
+
+        assert doc['_type'] == DEFAULT_DOC_TYPE
+
+        bulk(actions=(doc,), chunk_size=1)
+
+        es.indices.refresh()
+
+        es.exists(
+            index=ESRelatedModel.get_write_index(),
+            doc_type=RelatedModelSearchApp.name,
+            id=related_object.pk,
+        )
 
 
 def test_validate_model_fields(search_app):

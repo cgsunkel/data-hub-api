@@ -8,9 +8,6 @@ from datahub.search.inner_docs import IDNameTrigram, Person
 from datahub.search.models import BaseESModel
 
 
-DOC_TYPE = 'interaction'
-
-
 def _contact_field():
     return Object(
         properties={
@@ -139,11 +136,3 @@ class Interaction(BaseESModel):
         'dit_participants.team.name',
         'dit_participants.team.name.trigram',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DOC_TYPE
-
-    class Index:
-        doc_type = DOC_TYPE

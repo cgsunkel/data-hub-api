@@ -9,8 +9,6 @@ from datahub.search import dict_utils, fields
 from datahub.search.models import BaseESModel
 from datahub.search.utils import get_unique_values_and_exclude_nulls_from_list
 
-DOC_TYPE = 'company'
-
 
 def _adviser_field_with_indexed_id():
     return Object(
@@ -177,11 +175,3 @@ class Company(BaseESModel):
         'registered_address.country.name.trigram',
         'registered_address.postcode.trigram',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DOC_TYPE
-
-    class Index:
-        doc_type = DOC_TYPE

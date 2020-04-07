@@ -6,9 +6,6 @@ from datahub.search.contact import dict_utils as contact_dict_utils
 from datahub.search.models import BaseESModel
 
 
-DOC_TYPE = 'contact'
-
-
 class Contact(BaseESModel):
     """Elasticsearch representation of Contact model."""
 
@@ -86,11 +83,3 @@ class Contact(BaseESModel):
         'company.name',
         'company.name.trigram',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DOC_TYPE
-
-    class Index:
-        doc_type = DOC_TYPE
