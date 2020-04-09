@@ -241,11 +241,10 @@ def test_run(
 
     model = apps.get_model(model_name)
     search_app = get_search_app_by_model(model)
-    doc_type = search_app.name
     read_alias = search_app.es_model.get_read_alias()
 
     assert model.objects.count() == total_model_records
-    assert es_with_signals.count(read_alias, doc_type=doc_type)['count'] == total_model_records
+    assert es_with_signals.count(read_alias)['count'] == total_model_records
 
     # Run the command
     management.call_command(command, model_name)
@@ -253,7 +252,7 @@ def test_run(
 
     # Check that the records have been deleted
     assert model.objects.count() == total_model_records - 1
-    assert es_with_signals.count(read_alias, doc_type=doc_type)['count'] == total_model_records - 1
+    assert es_with_signals.count(read_alias)['count'] == total_model_records - 1
 
     # Check which models were actually deleted
     return_values = delete_return_value_tracker.return_values
