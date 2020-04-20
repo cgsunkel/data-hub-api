@@ -95,6 +95,7 @@ LOCAL_APPS = [
     'datahub.search.apps.SearchConfig',
     'datahub.user',
     'datahub.user.company_list',
+    'datahub.user.export_pipeline',
     'datahub.dbmaintenance',
     'datahub.cleanup',
     'datahub.omis.core',
