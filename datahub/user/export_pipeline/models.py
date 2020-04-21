@@ -9,7 +9,7 @@ from datahub.core.models import BaseModel
 class ExportPipelineList(BaseModel):
     """Pre-defined export pipeline list holding companies."""
 
-    class Status(models.TextChoices):
+    class Category(models.TextChoices):
         LEADS = ('leads', 'Leads')
         IN_PROGRESS = ('in_progress', 'In progress')
         EXPORT_WINS = ('export_wins', 'Export wins')
@@ -18,9 +18,9 @@ class ExportPipelineList(BaseModel):
         primary_key=True,
         default=uuid.uuid4,
     )
-    status = models.CharField(
+    category = models.CharField(
         max_length=settings.CHAR_FIELD_MAX_LENGTH,
-        choices=Status.choices,
+        choices=Category.choices,
     )
     adviser = models.ForeignKey(
         'company.Advisor',
@@ -30,7 +30,7 @@ class ExportPipelineList(BaseModel):
 
     def __str__(self):
         """Human-friendly representation."""
-        return f'{self.status} – {self.adviser}'
+        return f'{self.category} – {self.adviser}'
 
 
 class ExportPipelineItem(BaseModel):
@@ -53,11 +53,3 @@ class ExportPipelineItem(BaseModel):
     def __str__(self):
         """Human-friendly representation."""
         return f'{self.company} – {self.list}'
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=('list', 'company'),
-                name='unique_export_pipeline_list_and_company',
-            ),
-        ]

@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('created_on', models.DateTimeField(auto_now_add=True, db_index=True, null=True)),
                 ('modified_on', models.DateTimeField(auto_now=True, null=True)),
                 ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('status', models.CharField(choices=[('leads', 'Leads'), ('in_progress', 'In progress'), ('export_wins', 'Export wins')], max_length=255)),
+                ('category', models.CharField(choices=[('leads', 'Leads'), ('in_progress', 'In progress'), ('export_wins', 'Export wins')], max_length=255)),
                 ('adviser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='export_pipeline_lists', to=settings.AUTH_USER_MODEL)),
                 ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
                 ('modified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
@@ -42,9 +42,5 @@ class Migration(migrations.Migration):
                 ('list', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='export_pipeline_items', to='export_pipeline.ExportPipelineList')),
                 ('modified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
             ],
-        ),
-        migrations.AddConstraint(
-            model_name='exportpipelineitem',
-            constraint=models.UniqueConstraint(fields=('list', 'company'), name='unique_export_pipeline_list_and_company'),
         ),
     ]
