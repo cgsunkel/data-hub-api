@@ -28,8 +28,12 @@ from datahub.investment.project.models import InvestmentProject
 from datahub.investment.project.test.factories import InvestmentProjectFactory
 from datahub.omis.order.models import Order
 from datahub.omis.order.test.factories import OrderFactory
-from datahub.user.company_list.models import CompanyListItem
-from datahub.user.company_list.test.factories import CompanyListFactory, CompanyListItemFactory
+from datahub.user.company_list.models import CompanyListItem, PipelineItem
+from datahub.user.company_list.test.factories import (
+    CompanyListFactory,
+    CompanyListItemFactory,
+    PipelineItemFactory,
+)
 
 
 @pytest.fixture
@@ -60,6 +64,13 @@ def company_with_company_list_items_factory():
     """Factory for a company that is on users' personal company lists."""
     company = CompanyFactory()
     CompanyListItemFactory.create_batch(3, company=company)
+    return company
+
+
+def company_with_pipeline_items_factory():
+    """Factory for a company that is on users' personal pipeline."""
+    company = CompanyFactory()
+    PipelineItemFactory.create_batch(3, company=company)
     return company
 
 
@@ -114,6 +125,7 @@ class TestDuplicateCompanyMerger:
                         field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 0},
+                    PipelineItem: {'company': 0},
                 },
                 True,
             ),
@@ -128,6 +140,7 @@ class TestDuplicateCompanyMerger:
                         field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 0},
+                    PipelineItem: {'company': 0},
                 },
                 True,
             ),
@@ -142,6 +155,7 @@ class TestDuplicateCompanyMerger:
                         field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 0},
+                    PipelineItem: {'company': 0},
                 },
                 True,
             ),
@@ -156,6 +170,7 @@ class TestDuplicateCompanyMerger:
                         field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 0},
+                    PipelineItem: {'company': 0},
                 },
                 True,
             ),
@@ -170,6 +185,22 @@ class TestDuplicateCompanyMerger:
                         field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 0},
+                    PipelineItem: {'company': 0},
+                },
+                True,
+            ),
+            (
+                company_with_pipeline_items_factory,
+                {
+                    CompanyListItem: {'company': 0},
+                    CompanyReferral: {'company': 0},
+                    Contact: {'company': 0},
+                    Interaction: {'company': 0},
+                    InvestmentProject: {
+                        field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
+                    },
+                    Order: {'company': 0},
+                    PipelineItem: {'company': 3},
                 },
                 True,
             ),
@@ -184,6 +215,7 @@ class TestDuplicateCompanyMerger:
                         field: 1 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 0},
+                    PipelineItem: {'company': 0},
                 },
                 True,
             ),
@@ -198,6 +230,7 @@ class TestDuplicateCompanyMerger:
                         field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 3},
+                    PipelineItem: {'company': 0},
                 },
                 True,
             ),
@@ -212,6 +245,7 @@ class TestDuplicateCompanyMerger:
                         field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
                     },
                     Order: {'company': 0},
+                    PipelineItem: {'company': 0},
                 },
                 False,
             ),
@@ -242,6 +276,7 @@ class TestDuplicateCompanyMerger:
             ('num_interactions', True),
             ('num_orders', True),
             ('num_referrals', False),
+            ('num_pipeline_items', False),
         ),
     )
     @pytest.mark.parametrize('num_related_objects', (0, 1, 3))
@@ -269,6 +304,7 @@ class TestDuplicateCompanyMerger:
         source_orders = list(source_company.orders.all())
         source_referrals = list(source_company.referrals.all())
         source_company_list_items = list(source_company.company_list_items.all())
+        source_pipeline_list_items = list(source_company.pipeline_list_items.all())
 
         # Each interaction and order has a contact, so actual number of contacts is
         # source_num_interactions + source_num_contacts + source_num_orders
@@ -288,6 +324,7 @@ class TestDuplicateCompanyMerger:
                 field: 0 for field in INVESTMENT_PROJECT_COMPANY_FIELDS
             },
             Order: {'company': len(source_orders)},
+            PipelineItem: {'company': len(source_pipeline_list_items)},
         }
 
         source_related_objects = [
@@ -296,6 +333,7 @@ class TestDuplicateCompanyMerger:
             *source_interactions,
             *source_orders,
             *source_referrals,
+            *source_pipeline_list_items,
         ]
 
         for obj in source_related_objects:
@@ -373,6 +411,7 @@ class TestDuplicateCompanyMerger:
                 },
             },
             Order: {'company': 0},
+            PipelineItem: {'company': 0}
         }
 
         investment_project.refresh_from_db()
@@ -488,6 +527,7 @@ def _company_factory(
         num_orders=0,
         num_referrals=0,
         num_company_list_items=0,
+        num_pipeline_items=0,
 ):
     """Factory for a company that has companies, interactions and OMIS orders."""
     company = CompanyFactory()
@@ -496,4 +536,5 @@ def _company_factory(
     CompanyReferralFactory.create_batch(num_referrals, company=company, contact=None)
     OrderFactory.create_batch(num_orders, company=company)
     CompanyListItemFactory.create_batch(num_company_list_items, company=company)
+    PipelineItemFactory.create_batch(num_pipeline_items, company=company)
     return company

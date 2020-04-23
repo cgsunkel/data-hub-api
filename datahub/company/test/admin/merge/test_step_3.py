@@ -31,8 +31,11 @@ from datahub.investment.project.models import InvestmentProject
 from datahub.investment.project.test.factories import InvestmentProjectFactory
 from datahub.omis.order.models import Order
 from datahub.omis.order.test.factories import OrderFactory
-from datahub.user.company_list.models import CompanyListItem
-from datahub.user.company_list.test.factories import CompanyListItemFactory
+from datahub.user.company_list.models import CompanyListItem, PipelineItem
+from datahub.user.company_list.test.factories import (
+    CompanyListItemFactory,
+    PipelineItemFactory,
+)
 
 
 class TestConfirmMergeViewGet(AdminTestMixin):
@@ -111,6 +114,7 @@ class TestConfirmMergeViewPost(AdminTestMixin):
             ('num_investment_projects', False),
             ('num_orders', True),
             ('num_referrals', False),
+            ('num_pipeline_items', False),
         ),
     )
     @pytest.mark.parametrize('num_related_objects', (0, 1, 3))
@@ -136,6 +140,7 @@ class TestConfirmMergeViewPost(AdminTestMixin):
         source_orders = list(source_company.orders.all())
         source_referrals = list(source_company.referrals.all())
         source_company_list_items = list(source_company.company_list_items.all())
+        source_pipeline_list_items = list(source_company.pipeline_list_items.all())
 
         source_investment_projects_by_field = {
             investment_project_field: list(
@@ -207,6 +212,15 @@ class TestConfirmMergeViewPost(AdminTestMixin):
                 f'{len(source_company_list_items)} {company_list_item_noun}',
             )
 
+        if len(source_pipeline_list_items) > 0:
+            pipeline_item_noun = _get_verbose_name(
+                len(source_pipeline_list_items),
+                PipelineItem,
+            )
+            merge_entries.append(
+                f'{len(source_pipeline_list_items)} {pipeline_item_noun}',
+            )
+
         merge_entries = ', '.join(merge_entries)
 
         match = re.match(
@@ -233,6 +247,7 @@ class TestConfirmMergeViewPost(AdminTestMixin):
             *source_interactions,
             *source_orders,
             *source_referrals,
+            *source_pipeline_list_items,
         ]
         for obj in chain(
             source_non_project_related_objects,
@@ -355,6 +370,7 @@ def _company_factory(
         num_orders=0,
         num_referrals=0,
         num_company_list_items=0,
+        num_pipeline_items=0,
 ):
     """
     Factory for a company that has companies, interactions, investment projects and OMIS orders.
@@ -365,6 +381,7 @@ def _company_factory(
     CompanyReferralFactory.create_batch(num_referrals, company=company, contact=None)
     OrderFactory.create_batch(num_orders, company=company)
     CompanyListItemFactory.create_batch(num_company_list_items, company=company)
+    PipelineItemFactory.create_batch(num_pipeline_items, company=company)
 
     fields_iter = cycle(INVESTMENT_PROJECT_COMPANY_FIELDS)
     fields = islice(fields_iter, 0, num_investment_projects)
