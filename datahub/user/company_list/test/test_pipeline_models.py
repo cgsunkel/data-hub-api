@@ -12,15 +12,15 @@ class TestPipelineItem:
     """Tests Pipeline item model"""
 
     def test_str(self):
-        """Test the human friendly string representation of the object"""
+        """Test the human friendly string representation of the object."""
         pipeline_item = PipelineItemFactory()
         status = f'{pipeline_item.company} - {pipeline_item.adviser} - {pipeline_item.status}'
         assert str(pipeline_item) == status
 
     def test_unique_constraint(self):
         """
-        Test unique constraint
-        a company and adviser combination can't be added more than once
+        Test unique constraint.
+        A company and adviser combination can't be added more than once.
         """
         company = CompanyFactory()
         adviser = AdviserFactory()
