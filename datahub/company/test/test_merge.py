@@ -411,7 +411,7 @@ class TestDuplicateCompanyMerger:
                 },
             },
             Order: {'company': 0},
-            PipelineItem: {'company': 0}
+            PipelineItem: {'company': 0},
         }
 
         investment_project.refresh_from_db()

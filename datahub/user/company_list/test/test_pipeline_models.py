@@ -2,7 +2,6 @@ import pytest
 from django.db.utils import IntegrityError
 
 from datahub.company.test.factories import AdviserFactory, CompanyFactory
-from datahub.user.company_list.models import PipelineItem
 from datahub.user.company_list.test.factories import PipelineItemFactory
 
 # mark the whole module for db use

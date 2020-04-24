@@ -83,7 +83,7 @@ class PipelineItem(BaseModel):
     class Status(models.TextChoices):
         LEADS = ('leads', 'Leads')
         IN_PROGRESS = ('in_progress', 'In progress')
-        EXPORT_WINS = ('export_wins', 'Export wins')
+        WIN = ('win', 'Win')
 
     id = models.UUIDField(primary_key=True, default=uuid4)
     company = models.ForeignKey(
