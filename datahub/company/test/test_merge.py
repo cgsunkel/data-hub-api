@@ -460,6 +460,86 @@ class TestDuplicateCompanyMerger:
         ).exists()
         assert CompanyListItem.objects.filter(list=company_list, company=target_company).exists()
 
+    @pytest.mark.parametrize(
+        'source_status,target_status',
+        (
+            (PipelineItem.Status.LEADS, PipelineItem.Status.LEADS),
+            (PipelineItem.Status.LEADS, PipelineItem.Status.IN_PROGRESS),
+        ),
+    )
+    def test_merge_when_both_companies_are_on_pipeline_for_same_adviser(
+        self,
+        source_status,
+        target_status,
+    ):
+        """
+        Test that both source and target company are on pipeline for the same adviser
+        and same status. And the merge is successful.
+        """
+        adviser = AdviserFactory()
+        source_company = CompanyFactory()
+        target_company = CompanyFactory()
+
+        PipelineItemFactory(
+            adviser=adviser,
+            company=source_company,
+            status=source_status,
+        )
+        PipelineItemFactory(
+            adviser=adviser,
+            company=target_company,
+            status=target_status,
+        )
+
+        user = AdviserFactory()
+        merge_companies(source_company, target_company, user)
+
+        assert not PipelineItem.objects.filter(
+            adviser=adviser,
+            company=source_company,
+        ).exists()
+        assert PipelineItem.objects.filter(
+            adviser=adviser,
+            company=target_company,
+        ).exists()
+
+    def test_merge_when_both_companies_are_on_pipeline_diff_adviser(self):
+        """
+        Test that both source and target company are on pipeline with different advisers.
+        Merge is successful and both items are migrated to the target company.
+        """
+        adviser_1 = AdviserFactory()
+        adviser_2 = AdviserFactory()
+        source_company = CompanyFactory()
+        target_company = CompanyFactory()
+
+        PipelineItemFactory(
+            adviser=adviser_1,
+            company=source_company,
+            status=PipelineItem.Status.LEADS,
+        )
+        PipelineItemFactory(
+            adviser=adviser_2,
+            company=target_company,
+            status=PipelineItem.Status.IN_PROGRESS,
+        )
+
+        user = AdviserFactory()
+        merge_companies(source_company, target_company, user)
+
+        assert not PipelineItem.objects.filter(
+            adviser=adviser_1,
+            company=source_company,
+        ).exists()
+        assert PipelineItem.objects.filter(
+            adviser=adviser_1,
+            company=target_company,
+        ).exists()
+        assert PipelineItem.objects.filter(
+            adviser=adviser_2,
+            company=target_company,
+        ).exists()
+
     def test_merge_allowed_when_source_company_has_export_countries(self):
         """Test that merging is allowed if the source company has export countries."""
         source_company = CompanyFactory()
