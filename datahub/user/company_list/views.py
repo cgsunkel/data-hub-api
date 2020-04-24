@@ -113,6 +113,10 @@ class ExportPipelineItemAPIPermissions(DjangoModelPermissions):
             f'company.{CompanyPermission.view_company}',
             f'company_list.{PipelineItemPermissionCode.view_pipeline_item}',
         ],
+        'POST': [
+            f'company.{CompanyPermission.view_company}',
+            f'company_list.{PipelineItemPermissionCode.add_pipeline_item}',
+        ],
     }
 
 
@@ -169,6 +173,20 @@ class ExportPipelineItemViewSet(CoreViewSet):
     def get_queryset(self):
         """Get a query set filtered to the authenticated user's lists."""
         return super().get_queryset().filter(adviser=self.request.user)
+
+    def get_additional_data(self, create):
+        """
+        Set additional data for when serializer.save() is called.
+
+        This makes sure that adviser is set to self.request.user when the pipeline item
+        is created
+        """
+        additional_data = super().get_additional_data(create)
+
+        return {
+            **additional_data,
+            'adviser': self.request.user,
+        }
 
 
 class CompanyListItemAPIView(APIView):

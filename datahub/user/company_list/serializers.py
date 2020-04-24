@@ -72,7 +72,13 @@ class ExportPipelineItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = PipelineItem
         fields = (
+            'id',
+            'company',
+            'status',
+            'created_on',
+        )
+        read_only_fields = (
+            'id',
             'company',
             'created_on',
-            'status',
         )
