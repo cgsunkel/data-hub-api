@@ -31,7 +31,7 @@ from datahub.investment.project.models import InvestmentProject
 from datahub.investment.project.test.factories import InvestmentProjectFactory
 from datahub.omis.order.models import Order
 from datahub.omis.order.test.factories import OrderFactory
-from datahub.user.company_list.models import CompanyListItem, PipelineItem
+from datahub.user.company_list.models import CompanyListItem
 from datahub.user.company_list.test.factories import (
     CompanyListItemFactory,
     PipelineItemFactory,
