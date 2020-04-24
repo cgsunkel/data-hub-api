@@ -1,8 +1,19 @@
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy
 from rest_framework import serializers
+from rest_framework.settings import api_settings
 
 from datahub.company.models import Company
 from datahub.core.serializers import NestedRelatedField
 from datahub.user.company_list.models import CompanyList, CompanyListItem, PipelineItem
+
+CANT_ADD_ARCHIVED_COMPANY_MESSAGE = gettext_lazy(
+    "An archived company can't be added to the pipeline.",
+)
+COMPANY_ALREADY_EXISTS_MESSAGE = gettext_lazy(
+    "This company already exists in the pipeline for this user.",
+)
 
 
 class CompanyListSerializer(serializers.ModelSerializer):
@@ -68,6 +79,36 @@ class ExportPipelineItemSerializer(serializers.ModelSerializer):
         # call in the queryset module
         extra_fields=('name', 'turnover', 'export_potential'),
     )
+
+    @transaction.atomic
+    def create(self, validated_data):
+        """
+        Create a new instance using this serializer
+
+        :return: created instance
+        validates to make sure:
+        - an archived company will not be added
+        - existing company is not added to the same adviser
+        """
+        company = validated_data.get('company')
+        adviser = validated_data.get('adviser')
+
+        if company.archived:
+            errors = {
+                api_settings.NON_FIELD_ERRORS_KEY: CANT_ADD_ARCHIVED_COMPANY_MESSAGE,
+            }
+            raise serializers.ValidationError(errors)
+
+        if PipelineItem.objects.filter(
+            company=company,
+            adviser=adviser,
+        ).exists():
+            errors = {
+                api_settings.NON_FIELD_ERRORS_KEY: COMPANY_ALREADY_EXISTS_MESSAGE,
+            }
+            raise serializers.ValidationError(errors)
+
+        return super().create(validated_data)
 
     class Meta:
         model = PipelineItem

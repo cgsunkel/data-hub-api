@@ -1,11 +1,14 @@
+from uuid import uuid4
+
 import pytest
 from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from datahub.company.test.factories import CompanyFactory
+from datahub.company.test.factories import ArchivedCompanyFactory, CompanyFactory
 from datahub.core.test_utils import APITestMixin, create_test_user
 from datahub.user.company_list.models import PipelineItem
+from datahub.user.company_list.test.factories import PipelineItemFactory
 
 pipeline_collection_url = reverse('api-v4:company-list:pipelineitem-collection')
 
@@ -36,9 +39,7 @@ class TestAddPipelineItemView(APITestMixin):
         response = api_client.post(
             pipeline_collection_url,
             data={
-                'company': {
-                    'id': str(company.pk),
-                },
+                'company': str(company.pk),
                 'status': pipeline_status,
             },
         )
@@ -98,7 +99,7 @@ class TestAddPipelineItemView(APITestMixin):
             ),
             pytest.param(
                 {
-                    'company': lambda: str(CompanyFactory().pk),
+                    'company': lambda: CompanyFactory(),
                     'status': '',
                 },
                 {
@@ -132,9 +133,7 @@ class TestAddPipelineItemView(APITestMixin):
         response = api_client.post(
             pipeline_collection_url,
             data={
-                'company': {
-                    'id': str(company.pk),
-                },
+                'company': str(company.pk),
                 'status': pipeline_status,
             },
         )
@@ -160,3 +159,73 @@ class TestAddPipelineItemView(APITestMixin):
         assert pipeline_item.adviser == user
         assert pipeline_item.created_by == user
         assert pipeline_item.modified_by == user
+
+    @freeze_time('2017-04-19 15:25:30.986208')
+    def test_adding_existing_company_to_the_user(self):
+        """Test that same company can't be added to the same user again."""
+        permission_codenames = ['view_company', 'add_pipelineitem']
+        user = create_test_user(permission_codenames=permission_codenames, dit_team=None)
+        api_client = self.create_api_client(user=user)
+        company = CompanyFactory()
+        PipelineItemFactory(company=company, adviser=user)
+
+        response = api_client.post(
+            pipeline_collection_url,
+            data={
+                'company': str(company.pk),
+                'status': PipelineItem.Status.IN_PROGRESS,
+            },
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @freeze_time('2017-04-19 15:25:30.986208')
+    def test_with_archived_company(self):
+        """Test adding an archived company."""
+        permission_codenames = ['view_company', 'add_pipelineitem']
+        user = create_test_user(permission_codenames=permission_codenames, dit_team=None)
+        api_client = self.create_api_client(user=user)
+        company = ArchivedCompanyFactory()
+
+        response = api_client.post(
+            pipeline_collection_url,
+            data={
+                'company': str(company.pk),
+                'status': PipelineItem.Status.IN_PROGRESS,
+            },
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @freeze_time('2017-04-19 15:25:30.986208')
+    def test_with_non_existent_company(self):
+        """Test adding a non existent company."""
+        permission_codenames = ['view_company', 'add_pipelineitem']
+        user = create_test_user(permission_codenames=permission_codenames, dit_team=None)
+        api_client = self.create_api_client(user=user)
+
+        response = api_client.post(
+            pipeline_collection_url,
+            data={
+                'company': uuid4(),
+                'status': PipelineItem.Status.IN_PROGRESS,
+            },
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @freeze_time('2017-04-19 15:25:30.986208')
+    def test_same_company_can_be_added_to_different_users(self):
+        """Test that same company can be added to differnt users."""
+        permission_codenames = ['view_company', 'add_pipelineitem']
+        user = create_test_user(permission_codenames=permission_codenames, dit_team=None)
+        company = CompanyFactory()
+        PipelineItemFactory(company=company, adviser=user)
+
+        another_user = create_test_user(permission_codenames=permission_codenames, dit_team=None)
+        another_api_client = self.create_api_client(user=another_user)
+        response = another_api_client.post(
+            pipeline_collection_url,
+            data={
+                'company': str(company.pk),
+                'status': PipelineItem.Status.IN_PROGRESS,
+            },
+        )
+        assert response.status_code == status.HTTP_201_CREATED
