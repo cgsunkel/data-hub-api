@@ -78,8 +78,8 @@ def _company_list_item_updater(list_item, field, target_company):
 
 
 def _pipeline_item_updater(pipeline_item, field, target_company):
-    # If there is already a list item for the target company, delete this list item instead
-    # as duplicates are not allowed
+    # If there is already a pipeline item for the adviser for the target company
+    # delete this item instead as the same company can't be added for the same adviser again
     if PipelineItem.objects.filter(adviser=pipeline_item.adviser, company=target_company).exists():
         pipeline_item.delete()
     else:
