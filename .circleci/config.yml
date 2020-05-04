@@ -105,8 +105,8 @@ job_defaults: &job_defaults
         - run:
             name: Publish coverage
             command: |
-              wget -O codecov.sh https://codecov.io/bash
-              bash ./codecov.sh -t ${COV_TOKEN}
+              CURLARGS='--connect-timeout 5 --speed-time 5 --speed-limit 1000'
+              bash <(curl -s https://codecov.io/bash) -v -U "'$CURLARGS'" -A "'$CURLARGS'"
 
 jobs:
   build:
