@@ -14,7 +14,10 @@ def execute_search_query(query):
 
     (A warning is also logged if the query takes longer than a set threshold.)
     """
-    response = query.params(request_timeout=settings.ES_SEARCH_REQUEST_TIMEOUT).execute()
+    response = query.params(
+        request_timeout=settings.ES_SEARCH_REQUEST_TIMEOUT,
+        rest_total_hits_as_int=True,
+    ).execute()
 
     if response.took >= settings.ES_SEARCH_REQUEST_WARNING_THRESHOLD * 1000:
         logger.warning(f'Elasticsearch query took a long time ({response.took/1000:.2f} seconds)')

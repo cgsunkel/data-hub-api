@@ -176,7 +176,7 @@ def create_index(index_name, mapping, alias_names=()):
     alias_mapping = {alias_name: {} for alias_name in alias_names}
     index.aliases(**alias_mapping)
 
-    index.create()
+    index.create(include_type_name=True)
 
 
 def delete_index(index_name):
