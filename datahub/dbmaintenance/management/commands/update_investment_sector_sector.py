@@ -25,22 +25,9 @@ class Command(CSVBaseCommand):
 
     def _process_row(self, row, simulate=False, overwrite=False, **options):
         """Process a single row."""
-        pk = parse_uuid(row['id'])
-        investment_sector = InvestmentSector.objects.get(pk=pk)
         old_sector_id = parse_uuid(row['old_sector_id'])
+        investment_sector = InvestmentSector.objects.get(pk=old_sector_id)
         new_sector_id = parse_uuid(row['new_sector_id'])
-
-        if any(
-            [
-                investment_sector.sector.pk != old_sector_id,
-                investment_sector.sector.pk == new_sector_id,
-            ]
-        ):
-            logger.warning(
-                f'Not updating investment sector {investment_sector} as its',
-                'sector has not changed',
-            )
-            return
 
         investment_sector.sector = Sector.objects.get(pk=new_sector_id)
 
