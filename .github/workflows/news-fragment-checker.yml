@@ -1,0 +1,36 @@
+# This workflow verifies that news fragments are named correctly.
+
+name: Check names of news fragments
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  check_news_fragment:
+    name: Check news fragments
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      
+      - name: Install towncrier
+        run: |
+          python -m pip install towncrier
+      
+      - name: Generate list of news fragments
+        id: generateFragments
+        run: |
+          output=$(python scripts/script_utils/news_fragments.py)
+          echo "::set-output name=fragments::$output"
+      - name: Print news fragments
+        run: echo "${{ steps.generateFragments.outputs.generateFragments }}"
