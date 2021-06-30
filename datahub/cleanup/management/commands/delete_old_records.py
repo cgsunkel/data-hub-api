@@ -54,6 +54,7 @@ class Command(BaseCleanupCommand):
                 # before we delete the relevant companies
                 Company._meta.get_field('contacts'): (),
                 Company._meta.get_field('interactions'): (),
+                Company._meta.get_field('company_interactions'): (),
                 Company._meta.get_field('intermediate_investment_projects'): (),
                 Company._meta.get_field('investee_projects'): (),
                 Company._meta.get_field('investor_investment_projects'): (),
@@ -65,6 +66,7 @@ class Command(BaseCleanupCommand):
                 Company._meta.get_field('investor_profiles'): (
                     DatetimeLessThanCleanupFilter('modified_on', INVESTOR_PROFILE_EXPIRY_PERIOD),
                 ),
+                Company._meta.get_field('opportunities'): (),
             },
             # We want to delete the relations below along with any expired companies
             excluded_relations=(
@@ -159,6 +161,7 @@ class Command(BaseCleanupCommand):
                 InvestmentProject._meta.get_field(
                     'associated_non_fdi_r_and_d_project',
                 ).remote_field: (),
+                InvestmentProject._meta.get_field('opportunities'): (),
             },
             # These relations do not have any datetime fields to check – we just want them to be
             # deleted along with expired records.

@@ -21,6 +21,15 @@ class ActivitySerializer(serializers.Serializer):
             'name': company.name,
         }
 
+    def _get_companies(self, companies):
+        """
+        Get a serialized representation of a list of Companies.
+        """
+        return [
+            self._get_company(company)
+            for company in companies.order_by('pk')
+        ]
+
     def _get_contact(self, contact):
         """
         Get a serialized representation of a contact.
@@ -59,6 +68,11 @@ class ActivitySerializer(serializers.Serializer):
         if team is not None:
             adviser_with_team['dit:team'] = self._get_team(team)
         return adviser_with_team
+
+    def _get_adviser_with_team_and_role(self, adviser, role, type):
+        adviser = self._get_adviser_with_team(adviser, adviser.dit_team)
+        adviser[f'dit:{type}:role'] = role
+        return adviser
 
     def _get_team(self, team):
         return {} if team is None else {

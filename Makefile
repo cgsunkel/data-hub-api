@@ -24,3 +24,18 @@ load-metadata:
 setup-flake8-hook:
 	python3 -m venv env
 	. env/bin/activate && pip install pre-commit && pre-commit install && git config --bool flake8.strict true
+
+run-shell:
+	docker-compose run api bash
+
+run-test-reuse-db:
+	docker-compose run api pytest --reuse-db -vv <Add Test File Path>
+
+reindex-es:
+	docker-compose run api python manage.py sync_es
+
+fix-us-areas:
+	docker-compose run api python manage.py fix_us_company_address
+
+fix-ca-areas:
+	docker-compose run api python manage.py fix_ca_company_address

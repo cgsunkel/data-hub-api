@@ -18,6 +18,7 @@ from datahub.company.test.factories import (
     CompanyExportCountryFactory,
     CompanyFactory,
 )
+from datahub.company.test.utils import address_area_or_none
 from datahub.core.constants import Country, EmployeeRange, HeadquarterType, TurnoverRange, UKRegion
 from datahub.core.test_utils import (
     APITestMixin,
@@ -277,6 +278,7 @@ class TestGetCompany(APITestMixin):
                 'town': company.address_town,
                 'county': company.address_county or '',
                 'postcode': company.address_postcode or '',
+                'area': address_area_or_none(company.address_area),
                 'country': {
                     'id': str(company.address_country.id),
                     'name': company.address_country.name,
@@ -288,6 +290,7 @@ class TestGetCompany(APITestMixin):
                 'town': company.registered_address_town,
                 'county': company.registered_address_county or '',
                 'postcode': company.registered_address_postcode or '',
+                'area': address_area_or_none(company.registered_address_area),
                 'country': {
                     'id': str(company.registered_address_country.id),
                     'name': company.registered_address_country.name,
@@ -325,6 +328,8 @@ class TestGetCompany(APITestMixin):
                 'id': str(company.sector.id),
                 'name': company.sector.name,
             },
+            'export_segment': company.export_segment,
+            'export_sub_segment': company.export_sub_segment,
             'turnover_range': {
                 'id': str(company.turnover_range.id),
                 'name': company.turnover_range.name,
@@ -702,6 +707,7 @@ class TestUpdateCompany(APITestMixin):
                     'address_town': 'Muckamore',
                     'address_county': 'Antrim',
                     'address_postcode': 'BT41 4QE',
+                    'address_area': None,
                     'address_country_id': Country.ireland.value.id,
                 },
                 {
@@ -711,6 +717,7 @@ class TestUpdateCompany(APITestMixin):
                         'town': 'London',
                         'county': 'Greenwich',
                         'postcode': 'SE10 9NN',
+                        'area': None,
                         'country': {
                             'id': Country.united_kingdom.value.id,
                         },
@@ -723,6 +730,7 @@ class TestUpdateCompany(APITestMixin):
                         'town': 'London',
                         'county': 'Greenwich',
                         'postcode': 'SE10 9NN',
+                        'area': None,
                         'country': {
                             'id': Country.united_kingdom.value.id,
                             'name': Country.united_kingdom.value.name,
@@ -739,6 +747,7 @@ class TestUpdateCompany(APITestMixin):
                     'address_town': 'Muckamore',
                     'address_county': 'Antrim',
                     'address_postcode': 'BT41 4QE',
+                    'address_area_id': None,
                     'address_country_id': Country.ireland.value.id,
 
                     'registered_address_1': '2',
@@ -746,6 +755,7 @@ class TestUpdateCompany(APITestMixin):
                     'registered_address_town': 'London',
                     'registered_address_county': 'Greenwich',
                     'registered_address_postcode': 'SE10 9NN',
+                    'registered_address_area_id': None,
                     'registered_address_country_id': Country.united_kingdom.value.id,
                 },
                 {
@@ -767,6 +777,7 @@ class TestUpdateCompany(APITestMixin):
                         'town': 'Bristol',
                         'county': 'Bristol',
                         'postcode': 'BS5 6TX',
+                        'area': None,
                         'country': {
                             'id': Country.united_kingdom.value.id,
                             'name': Country.united_kingdom.value.name,
@@ -783,6 +794,7 @@ class TestUpdateCompany(APITestMixin):
                     'address_town': 'Muckamore',
                     'address_county': 'Antrim',
                     'address_postcode': 'BT41 4QE',
+                    'address_area_id': None,
                     'address_country_id': Country.ireland.value.id,
 
                     'registered_address_1': '2',
@@ -790,6 +802,7 @@ class TestUpdateCompany(APITestMixin):
                     'registered_address_town': 'London',
                     'registered_address_county': 'Greenwich',
                     'registered_address_postcode': 'SE10 9NN',
+                    'registered_address_area_id': None,
                     'registered_address_country_id': Country.united_kingdom.value.id,
                 },
                 {
@@ -1300,6 +1313,7 @@ class TestAddCompany(APITestMixin):
                     'address': {
                         'line_1': '75 Stramford Road',
                         'town': 'London',
+                        'area': None,
                         'country': {
                             'id': Country.united_kingdom.value.id,
                         },
@@ -1320,6 +1334,7 @@ class TestAddCompany(APITestMixin):
                         'town': 'London',
                         'county': '',
                         'postcode': '',
+                        'area': None,
                         'country': {
                             'id': Country.united_kingdom.value.id,
                             'name': Country.united_kingdom.value.name,
@@ -1342,6 +1357,7 @@ class TestAddCompany(APITestMixin):
                     'address': {
                         'line_1': '75 Stramford Road',
                         'town': 'Cordova',
+                        'area': None,
                         'country': {
                             'id': Country.united_states.value.id,
                         },
@@ -1354,6 +1370,7 @@ class TestAddCompany(APITestMixin):
                         'town': 'Cordova',
                         'county': '',
                         'postcode': '',
+                        'area': None,
                         'country': {
                             'id': Country.united_states.value.id,
                             'name': Country.united_states.value.name,
@@ -1417,6 +1434,7 @@ class TestAddCompany(APITestMixin):
                     'registered_address': {
                         'line_1': '1 Hello st.',
                         'town': 'Dublin',
+                        'area': None,
                         'country': {
                             'id': Country.ireland.value.id,
                         },
@@ -1429,6 +1447,7 @@ class TestAddCompany(APITestMixin):
                         'town': 'Dublin',
                         'county': '',
                         'postcode': '',
+                        'area': None,
                         'country': {
                             'id': Country.ireland.value.id,
                             'name': Country.ireland.value.name,

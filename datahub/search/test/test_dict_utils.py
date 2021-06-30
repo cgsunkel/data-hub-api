@@ -19,6 +19,27 @@ def test_id_name_dict():
     }
 
 
+def test_interaction_dict():
+    """Interaction dict should serialize id, date and subject"""
+    obj = construct_mock(
+        id=1234,
+        date='2018-01-01',
+        subject='mock interaction',
+    )
+    res = dict_utils.interaction_dict(obj)
+    assert res == {
+        'id': str(obj.id),
+        'date': obj.date,
+        'subject': obj.subject,
+    }
+
+
+def test_interaction_dict_none():
+    """Interaction dict should return none for none input"""
+    res = dict_utils.interaction_dict(None)
+    assert res is None
+
+
 def test_id_name_list_of_dicts():
     """Test that id_name_list_of_dicts returns a list of dicts with ID and name keys."""
     data = [
@@ -118,6 +139,7 @@ def test_company_dict(obj, expected_dict):
                 address_county='',
                 address_postcode='',
                 address_country=None,
+                address_area=None,
             ),
             'address',
             None,
@@ -142,6 +164,7 @@ def test_company_dict(obj, expected_dict):
                     id='80756b9a-5d95-e211-a939-e4115bead28a',
                     name='United Kingdom',
                 ),
+                primary_address_area=None,
             ),
             'primary_address',
             {
@@ -154,6 +177,7 @@ def test_company_dict(obj, expected_dict):
                     'id': '80756b9a-5d95-e211-a939-e4115bead28a',
                     'name': 'United Kingdom',
                 },
+                'area': None,
             },
         ),
 
@@ -170,6 +194,7 @@ def test_company_dict(obj, expected_dict):
                     id='80756b9a-5d95-e211-a939-e4115bead28a',
                     name='United Kingdom',
                 ),
+                primary_address_area=None,
             ),
             'primary_address',
             {
@@ -182,6 +207,7 @@ def test_company_dict(obj, expected_dict):
                     'id': '80756b9a-5d95-e211-a939-e4115bead28a',
                     'name': 'United Kingdom',
                 },
+                'area': None,
             },
         ),
     ),
@@ -208,6 +234,7 @@ def test_address_dict_raises_error_with_invalid_prefix():
             id='80756b9a-5d95-e211-a939-e4115bead28a',
             name='United Kingdom',
         ),
+        primary_address_area=None,
     )
     with pytest.raises(AttributeError):
         dict_utils.address_dict(obj, prefix='secondary_address')

@@ -305,7 +305,6 @@ class IProjectSerializer(PermittedFieldsModelSerializer, NoteAwareModelSerialize
         ),
     }
 
-    incomplete_fields = serializers.SerializerMethodField()
     project_code = serializers.CharField(read_only=True)
     investment_type = NestedRelatedField(meta_models.InvestmentType)
     stage = NestedRelatedField(meta_models.InvestmentProjectStage, required=False)
@@ -371,6 +370,7 @@ class IProjectSerializer(PermittedFieldsModelSerializer, NoteAwareModelSerialize
         meta_models.InvestmentStrategicDriver, many=True, required=False,
     )
     uk_company = NestedRelatedField(Company, required=False, allow_null=True)
+    incomplete_fields = serializers.ListField(child=serializers.CharField(), read_only=True)
     requirements_complete = serializers.SerializerMethodField()
 
     # Team fields
@@ -416,8 +416,7 @@ class IProjectSerializer(PermittedFieldsModelSerializer, NoteAwareModelSerialize
             # Required for validation as DRF does not allow defaults for read-only fields
             data['allow_blank_possible_uk_regions'] = False
 
-            self._store_investor_company_details(data)
-
+        self._store_investor_company_details_if_not_yet_won(data)
         self._check_if_investment_project_can_be_moved_to_verify_win(data)
         self._check_if_investment_project_can_be_moved_to_won(data)
         self._validate_for_stage(data)
@@ -442,11 +441,25 @@ class IProjectSerializer(PermittedFieldsModelSerializer, NoteAwareModelSerialize
         ):
             data['project_manager_requested_on'] = now()
 
-    def _store_investor_company_details(self, data):
+    def _store_investor_company_details_if_not_yet_won(self, data):
         # Store investor company details used for reporting
         # Investor company details may change over time, that's why we need to keep the details
-        # at the time of investment project creation
+        # at the time of investment project creation and update until the project is won
+        if 'investor_company' not in data:
+            return
         investor_company = data['investor_company']
+
+        if (
+            self.instance
+            and (
+                str(self.instance.stage_id) == InvestmentProjectStage.won.value.id
+                or investor_company.address_country
+                == self.instance.country_investment_originates_from
+            )
+        ):
+            # nothing to update, as either project is won or country is the same
+            return
+
         data['country_investment_originates_from'] = investor_company.address_country
 
     def _check_if_investment_project_can_be_moved_to_verify_win(self, data):
@@ -490,12 +503,6 @@ class IProjectSerializer(PermittedFieldsModelSerializer, NoteAwareModelSerialize
         if errors:
             raise serializers.ValidationError(errors)
 
-    def get_incomplete_fields(self, instance):
-        """Returns the names of the fields that still need to be completed in order to
-        move to the next stage.
-        """
-        return tuple(validate(instance=instance, next_stage=True))
-
     def get_value_complete(self, instance):
         """Whether the value fields required to move to the next stage are complete."""
         return not validate(
@@ -529,8 +536,8 @@ class IProjectSerializer(PermittedFieldsModelSerializer, NoteAwareModelSerialize
             'archived_reason',
             'archived_documents_url_path',
             'comments',
-            'project_manager_requested_on',
             'gross_value_added',
+            'project_manager_requested_on',
         )
 
 

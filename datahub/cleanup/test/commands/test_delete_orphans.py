@@ -23,8 +23,12 @@ from datahub.company_referral.test.factories import CompanyReferralFactory
 from datahub.core.exceptions import DataHubException
 from datahub.core.model_helpers import get_related_fields
 from datahub.event.test.factories import EventFactory
-from datahub.interaction.test.factories import CompanyInteractionFactory
+from datahub.interaction.test.factories import (
+    CompaniesInteractionFactory,
+    CompanyInteractionFactory,
+)
 from datahub.investment.investor_profile.test.factories import LargeCapitalInvestorProfileFactory
+from datahub.investment.opportunity.test.factories import LargeCapitalOpportunityFactory
 from datahub.investment.project.test.factories import InvestmentProjectFactory
 from datahub.omis.order.test.factories import (
     OrderFactory,
@@ -62,6 +66,7 @@ MAPPINGS = {
         'dependent_models': (
             (CompanyReferralFactory, 'company'),
             (CompanyInteractionFactory, 'company'),
+            (CompaniesInteractionFactory, 'companies'),
             (ContactFactory, 'company'),
             (ShallowInvestmentProjectFactory, 'intermediate_company'),
             (ShallowInvestmentProjectFactory, 'investor_company'),
@@ -71,6 +76,7 @@ MAPPINGS = {
             (CompanyFactory, 'global_headquarters'),
             (OneListCoreTeamMemberFactory, 'company'),
             (LargeCapitalInvestorProfileFactory, 'investor_company'),
+            (LargeCapitalOpportunityFactory, 'promoters'),
         ),
         'implicit_related_models': (),
         'ignored_models': (),
@@ -83,6 +89,7 @@ MAPPINGS = {
         'implicit_related_models': (
             'event.Event_teams',
             'event.Event_related_programmes',
+            'event.Event_related_trade_agreements',
         ),
         'ignored_models': (),
     },
@@ -247,7 +254,7 @@ def test_run(
     read_alias = search_app.es_model.get_read_alias()
 
     assert model.objects.count() == total_model_records
-    assert es_with_signals.count(read_alias)['count'] == total_model_records
+    assert es_with_signals.count(index=read_alias)['count'] == total_model_records
 
     # Run the command
     management.call_command(command, model_name)
@@ -255,7 +262,7 @@ def test_run(
 
     # Check that the records have been deleted
     assert model.objects.count() == total_model_records - 1
-    assert es_with_signals.count(read_alias)['count'] == total_model_records - 1
+    assert es_with_signals.count(index=read_alias)['count'] == total_model_records - 1
 
     # Check which models were actually deleted
     return_values = delete_return_value_tracker.return_values
@@ -304,7 +311,7 @@ def test_simulate(
     read_alias = search_app.es_model.get_read_alias()
 
     assert model.objects.count() == 3
-    assert es_with_signals.count(read_alias)['count'] == 3
+    assert es_with_signals.count(index=read_alias)['count'] == 3
 
     # Run the command
     management.call_command(command, model_name, simulate=True)
@@ -325,7 +332,7 @@ def test_simulate(
 
     # Check that nothing has actually been deleted
     assert model.objects.count() == 3
-    assert es_with_signals.count(read_alias)['count'] == 3
+    assert es_with_signals.count(index=read_alias)['count'] == 3
 
 
 @freeze_time(FROZEN_TIME)

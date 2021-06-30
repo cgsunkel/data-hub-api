@@ -39,6 +39,8 @@ job_defaults: &job_defaults
     DJANGO_SETTINGS_MODULE: config.settings.local
     ES_INDEX_PREFIX: test_index
     ES5_URL: http://localhost:9200
+    # This has been readded to allow tests utilizing elasticsearch to be unskipped
+    ELASTICSEARCH_URL: http://localhost:9200
     PAAS_IP_WHITELIST: 1.2.3.4
     AWS_DEFAULT_REGION: eu-west-2
     AWS_ACCESS_KEY_ID: foo
@@ -62,6 +64,9 @@ job_defaults: &job_defaults
     - image: <<parameters.python_image>>
 
     - image: <<parameters.es_image>>
+      environment:
+        discovery.type: single-node
+        http.port: 9200
 
     - image: <<parameters.es_apm_image>>
       command: ["apm-server", "-e", "-E", "output.elasticsearch.hosts=[\"localhost:9200\"]"]
@@ -131,5 +136,5 @@ workflows:
           python_image: python:3.8
           postgres_image: postgres:10
           mi_postgres_image: postgres:9.6
-          es_image: docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+          es_image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
           es_apm_image: docker.elastic.co/apm/apm-server:7.7.1

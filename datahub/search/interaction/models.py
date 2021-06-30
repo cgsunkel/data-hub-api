@@ -5,7 +5,7 @@ from elasticsearch_dsl import Boolean, Date, Double, InnerDoc, Keyword, Object, 
 from datahub.search import dict_utils, fields
 from datahub.search.fields import TrigramText
 from datahub.search.inner_docs import IDNameTrigram, Person
-from datahub.search.models import BaseESModel, DEFAULT_MAPPING_TYPE
+from datahub.search.models import BaseESModel
 
 
 def _contact_field():
@@ -58,6 +58,13 @@ def _export_countries_list(export_countries):
     ]
 
 
+def _companies_list(companies):
+    return [
+        dict_utils.company_dict(company)
+        for company in companies.all()
+    ]
+
+
 class _DITParticipant(InnerDoc):
     adviser = Object(Person)
     team = Object(IDNameTrigram)
@@ -68,6 +75,7 @@ class Interaction(BaseESModel):
 
     id = Keyword()
     company = fields.company_field()
+    companies = fields.company_field()
     company_sector = fields.sector_field()
     company_one_list_group_tier = fields.id_unindexed_name_field()
     communication_channel = fields.id_unindexed_name_field()
@@ -99,6 +107,7 @@ class Interaction(BaseESModel):
 
     MAPPINGS = {
         'company': dict_utils.company_dict,
+        'companies': _companies_list,
         'communication_channel': dict_utils.id_name_dict,
         'contacts': dict_utils.contact_or_adviser_list_of_dicts,
         'dit_participants': _dit_participant_list,
@@ -136,11 +145,3 @@ class Interaction(BaseESModel):
         'dit_participants.team.name',
         'dit_participants.team.name.trigram',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DEFAULT_MAPPING_TYPE
-
-    class Index:
-        doc_type = DEFAULT_MAPPING_TYPE

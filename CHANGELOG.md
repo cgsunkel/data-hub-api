@@ -1,3 +1,546 @@
+# Data Hub API 36.26.0 (2021-06-28)
+## Features
+
+- **Interactions** The Activity Stream Interactions feed is now publishing `companies` field data instead of `company`.
+- Puerto Rico has been removed as a US state in favour of listing it as a country
+
+## Bug fixes
+
+- **Investment** Large Capital Investor Profile Investor companies further enhanced to optimise opening times
+
+
+# Data Hub API 36.25.0 (2021-06-24)
+## Features
+
+- **Investment** It's now possible to view investor company area within investment project area search export CSV file
+
+## Bug fixes
+
+- **Investment** Investor profile now has autocomplete fields to optimise load times
+- **Investment** Large capital opportunity profile now has autocomplete fields to optimise load times
+
+
+# Data Hub API 36.24.0 (2021-06-23)
+## Bug fixes
+
+- Interactions companies bad gateway is now resolved
+
+## API
+
+- **Interactions** `GET /v3/search`, `POST /v3/search/interaction`: `companies` was added as an array field in search results. This field is intended to replace the `company` field.
+
+
+# Data Hub API 36.23.0 (2021-06-18)
+## Deprecations
+
+- **Interactions** The `company` field is now deprecated for Interactions.
+
+## Features
+
+- Company search results can now be improved by enabling the 'dnb-search-v2' feature flag
+
+## API
+
+- **Interactions** A new `companies` field has been added to Interaction API. The field is being mirrored with the existing `company` field.
+  Both `company` and `companies` cannot be set at the same time.
+  If multiple companies are provided, the first one will be copied to `company` field. Refer to the API documentation for the schema.
+
+## Database schema
+
+- **Interactions** A new field `companies` has been added that will enable Interactions to be associated with multiple companies.
+
+
+# Data Hub API 36.22.0 (2021-06-11)
+## Features
+
+- It's now possible to interact with BED and Salesforce using the BED salesforce API.
+- Requesting address areas for company investigations is now tested
+
+## Bug fixes
+
+- **Investment** Fixes the investment summary totals api endpoint GET `api-proxy/v4/adviser/<adviser_id>/investment-summary` 
+
+  This ensures that projects are counted correctly when advisers are team members on a project.
+
+## API
+
+- **Interactions** Expose `related_trade_agreement_names` via GET `v4/dataset/interactions-dataset endpoint`
+
+  This allows data workspace to ingest this information against each interaction
+
+
+# Data Hub API 36.21.0 (2021-06-01)
+## Features
+
+- **Interactions** Adds `Midlands Engine` as `Export Interaction` and `Export Service Delivery` option.
+- **Investment** The field `Green Investment` was added as an investment business activity.
+
+## API
+
+- The DNB API now can receive Administrative Area name and Administrative Area abbreviated name from the DNB service.
+
+## Database schema
+
+- The administrative area table now has a new field of area name.
+  This field is an expanded name for the administrative area code.
+
+
+# Data Hub API 36.20.0 (2021-05-24)
+## Bug fixes
+
+- **Investment** The audit log is no longer updated when there was no change to `country_investment_originates_from`.
+
+
+# Data Hub API 36.19.0 (2021-05-20)
+## Features
+
+- **Investment** The `country_investment_originates_from` field is now being updated until the investment project is won.
+
+
+# Data Hub API 36.18.0 (2021-05-05)
+
+
+## Features
+
+- **Interactions** Add `Enhanced International Support Services` as Export interaction and Export service delivery.
+- Add the COP26 service and its child services:
+
+  * Adaptation and Resilience
+  * Clean Transport, including EV100
+  * Energy Transitions, including RE100 and EP100
+  * Finance, including TCFD
+  * Participation at Glasgow/getting involved with COP26
+  * Nature, including supply chains
+  * Race to Zero, including Science Based Targets
+- Add Levelling Up
+
+  Add Specific DIT Export Service or Funding / Levelling Up (Export interaction, Export service delivery)
+  Add Specific Service / Levelling Up (Other interaction, Other service delivery)
+
+## Bug fixes
+
+- Removes unrequired code in pre-commit-config.yaml file which prevents the flake8 pre-commit hook setup from working correctly.
+
+## Database schema
+
+- Postcodes can now be fixed for Canadian companies using a management command. 
+  Running this command will also update the address area to match the fixed postcode where possible.
+  Address area update made more reliable and refined by only updating active companies only containing a D-U-N-S number, guaranteeing the address data to be reliable.
+
+
+# Data Hub API 36.17.0 (2021-04-28)
+
+
+## Features
+
+- Address Area is now serialised within all the address data REST calls, including swagger documentation examples 
+  and the MultiAddressModel, utilised within the test samples containing primary and secondary address details.
+
+## Bug fixes
+
+- **Contacts** Telephone numbers and country codes are now validated for contacts
+- **Contacts** Reduces the strictness of country code validation for contacts - now allows with or without a preceding +
+- **Investment** Updated Specific Programmes (x4) fixtures
+- CSV output is now escaped to protect against CSV injection: https://owasp.org/www-community/attacks/CSV_Injection
+
+## Database schema
+
+- **Interactions** Two new fields: `has_related_trade_agreements` and `related_trade_agreements` have been added to the interactions model.
+  These fields are not required on the existing v3 interactions endpoint.
+
+  A new v4 interactions endpoint has been added where these two fields are marked as required.
+- DB management command for fixing postcodes for US companies and updating the address area to match the fixed postcode where possible
+
+
+# Data Hub API 36.16.0 (2021-04-16)
+
+
+## Features
+
+- **Advisers** Feature flags can now be applied on a per-user basis through Django Admin.
+
+  - Adds a new UserFeatureFlag model
+  - Adds a new "features" field to the Advisor model
+  - Exposes "active_features" on the `whoami` endpoint
+
+## API
+
+- **Investment** A new `POST /v4/search/large-capital-opportunity/export` endpoint has been added
+  that enables export of search results in CSV format.
+
+
+# Data Hub API 36.15.0 (2021-04-13)
+
+
+## Features
+
+- **Investment** A new search app has been added for Large Capital Opportunity.
+- **Investment** **Investment** Project Proposition has been added to the admin area.
+- Add Trade agreement interaction choice and service update.
+
+## Internal changes
+
+- Trade agreements moved from events to generic metadata in order to add trade agreements to interactions going forward and update trade agreements
+
+## API
+
+- **Investment** A new `POST /v4/search/large-capital-opportunity` endpoint has been added.
+  The endpoint enables the following filters:
+
+  Main filters:
+
+      type
+      status
+      name
+      created_by
+
+  Detail filters:
+
+      uk_region_location
+      promoter
+      promoter_name
+      lead_dit_relationship_manager
+      required_checks_conducted
+      required_checks_conducted_by
+      asset_class
+      opportunity_value_type
+      opportunity_value_start
+      opportunity_value_end
+      construction_risk
+
+  Requirement filters:
+
+      total_investment_sought_start
+      total_investment_sought_end
+      current_investment_secured_start
+      current_investment_secured_end
+      investment_type
+      estimated_return_rate
+      time_horizon
+
+  Extra filters:
+
+      created_on_after
+      created_on_before
+
+
+# Data Hub API 36.14.0 (2021-04-09)
+
+
+## Features
+
+- Companies are now searchable by administrative area.
+
+## Bug fixes
+
+- **Investment** The investment project summary schema now shows specifies the start and end dates with the proper data schema.
+- **Investment** The investment project schema now shows "incomplete_fields" correctly as an array of strings (instead of a plain string).
+
+## Internal changes
+
+- SSO Auth Admin client was updated.
+
+
+# Data Hub API 36.13.0 (2021-04-07)
+
+
+## Features
+
+- **Investment** An Activity Stream endpoint was added for large capital investment opportunities `GET /v3/activity-stream/investment/large-capital-opportunity`.
+- **Investment** The `POST /v4/large-capital-opportunity` endpoint has been updated, so that it only requires a `name` parameter 
+  to create a new opportunity.
+
+## Database schema
+
+- **Events** Two new fields: `has_related_trade_agreements` and `related_trade_agreements` have been added to the events model.
+  These fields are not required on the existing v3 events endpoint.
+
+  A new v4 events has been added where these two fields are marked as required.
+
+
+# Data Hub API 36.12.0 (2021-03-31)
+
+
+## Features
+
+- **Investment** Incomplete fields were added to the investment search endpoint (`POST /v3/search/investment_project`)
+- Added Canada administrative area data.
+- Added event program for partnering with Japan.
+
+## Bug fixes
+
+- **Investment** The investment summary API endpoint was adjusted to only count prospects from the date they were created.
+
+## API
+
+- **Investment** A new endpoint `GET /v4/large-capital-opportunity/<uuid:pk>/audit` has been added that lists changes to a given 
+  opportunity. Refer to the API documentation for the schema.
+
+
+# Data Hub API 36.11.0 (2021-03-24)
+
+
+## Features
+
+- Exposed all Company, including public, export_segment and export_sub_segment rest values.
+- Extended Elasticsearch data to expose export segment and sub segment data.
+
+## Bug fixes
+
+- **Investment** The endpoint `GET /v4/large-capital-opportunity/<uuid>` now has updated potential values for `incomplete_details_fields` and `incomplete_requirements_fields`. 
+  Fixture data for this endpoint is also now available for front end developers.
+
+## Internal changes
+
+- Upgraded python version to 3.8.8.
+
+
+# Data Hub API 36.10.0 (2021-03-24)
+
+
+## Features
+
+- **Investment** A large capital opportunity has been added to the admin area.
+- Area can now be stored as a field in the company model.
+- Exposed all Company, including public, export_segment and export_sub_segment rest values.
+
+## API
+
+- **Interactions** `POST /v3/interaction`: It is now possible to create a large capital opportunity interactions, by adding:
+
+    ```json
+    {
+      ...
+      "large_capital_opportunity": {"id": <large_capital_opportunity_id>},
+      "theme": "large_capital_opportunity",
+      ...
+    }
+    ```
+- **Interactions** `GET /v3/interaction`, `GET /v3/interaction/<id>`: A `large_capital_opportunity` field was added to responses. 
+  If large capital opportunity interaction has been created, the field will have following structure:
+
+    ```json
+    {
+      ...
+      "large_capital_opportunity": {
+        "id": <large_capital_opportunity_id>,
+        "name": "Name of the opportunity",
+      }
+    }
+    ```
+
+    Otherwise, the value will be `null`.
+- **Interactions** `GET /v3/interaction`: It is now possible to filter interactions by large capital opportunity, 
+  by adding `large_capital_opportunity_id` to the request.
+- **Investment** A new endpoint `POST /v4/large-capital-opportunity` has been added. It creates a new large capital opportunity. Refer to the API documentation for the schema.
+- **Investment** A new endpoint `GET /v4/large-capital-opportunity/<uuid>` has been added. It retrieves a given large capital opportunity. Refer to the API documentation for the schema.
+- **Investment** A new endpoint `GET /v4/large-capital-opportunity` has been created that lists large capital opportunities.
+  Opportunities can be filtered by `investment_project__id` filter.
+  Refer to the API documentation for the schema.
+- **Investment** A new endpoint `PATCH /v4/large-capital-opportunity/<uuid>` has been added. It updates a given large capital opportunity. Refer to the API documentation for the schema.
+- A new pipeline item dataset endpoint (`GET /v4/dataset/pipeline-items-dataset`) was added to be consumed by data-flow and used in data-workspace.
+
+## Database schema
+
+- **Companies** The fields `export_segment` and `export_sub_segment` were added (endpoints to follow in a future release).
+
+
+# Data Hub API 36.9.0 (2021-03-11)
+
+
+## Features
+
+- **Investment** The latest interaction (with date and subject) was added to the investment projects search endpoint.
+- **Investment** A new propositions endpoint was added under `/v4/proposition` - this is a more flexible version of the existing `/v3/investment/<uuid>/proposition` endpoint, but does not require an investment project id.
+
+## Internal changes
+
+- **Companies** The company endpoint `company/<uuid:pk>/export-win` now returns an empty list HTTP 200, instead of throwing a HTTP 404 when it can't match a company via the Company Matching Service.
+
+## Database schema
+
+- A new field `area_code` has been added to Administrative Areas under metadata.
+
+
+# Data Hub API 36.8.0 (2021-03-02)
+
+
+## Internal changes
+
+- **Investment** It is now possible to use the `capital-investments-filters` feature flag
+  automatically during local development without manual setup.
+
+## API
+
+- **Investment** It is now possible to view the `modified_by` of a Large Capital Investment Profile in the activity-stream using 
+  the following URL `/v3/activity-stream/investment/large-capital-investor-profiles`.
+
+
+# Data Hub API 36.7.0 (2021-03-01)
+
+
+## Features
+
+- **Investment** The investment summaries endpoint now includes the upcoming financial year as well as the current and previous.
+
+
+# Data Hub API 36.6.0 (2021-02-16)
+
+
+## Features
+
+- **Interactions** A new interaction theme has been added - `Large capital opportunity` so that it is now possible to store interactions 
+  related to large capital opportunities.
+- **Investment** A new `opportunity` application has been added to `investment` that helps recording large capital opportunities.
+
+## Internal changes
+
+- User account lockout mechanism has been implemented for admin pages. A user account should be locked out (prevented from making further login attempts) after a certain number of consecutive unsuccessful logon attempts.
+
+## Database schema
+
+- **Interactions** A new field `large_capital_opportunity` has been added to link interactions with large capital opportunities.
+- **Investment** A new model `opportunity_largecapitalopportunity` was created to store large capital opportunities.
+
+
+# Data Hub API 36.5.0 (2021-02-11)
+
+
+## Features
+
+- **Investment** The investment summary endpoint now includes the UUIDs of each stage with the project total counts.
+
+
+# Data Hub API 36.4.0 (2021-02-08)
+
+
+## API
+
+- **Investment** It is now possible to get a list of large capital investment profiles created in activity-stream using 
+  the following URL `/v3/activity-stream/investment/large-capital-investor-profiles`.
+
+
+# Data Hub API 36.3.0 (2021-01-29)
+
+
+## Features
+
+- **Investment** A new endpoint was added at `v4/adviser/<uuid>/investment-summary` to get a summary of an adviser's investment projects for the current and previous financial year. This shows the project counts at each of the following stages: `prospect`, `assign_pm`, `active`, `verify_win` and `won`.
+
+
+# Data Hub API 36.2.3 (2021-01-15)
+
+
+## Internal changes
+
+- **Investment** Example `investor_profile` data containing 3 example Large Capital investor profiles has been added to the text fixture data.
+
+
+# Data Hub API 36.2.2 (2021-01-12)
+
+
+## Bug fixes
+
+- **Interactions** A `Parent country` column has been added to business intelligence report.
+
+
+# Data Hub API 36.2.1 (2021-01-11)
+
+
+## Bug fixes
+
+- **Interactions** The columns of interaction business intelligence report have been updated to match Data Workspace report.
+
+## Internal changes
+
+- **Advisers** An example trade advisor with `is_active` set to `false` has been added to the test fixture data to support `data-hub-frontend` e2e testing.
+
+
+# Data Hub API 36.2.0 (2021-01-06)
+
+
+## Features
+
+- **Interactions** A new `POST /v3/search/interaction/policy-feedback` endpoint has been added. It returns a CSV file with added columns to
+  match Data Workspace export.
+
+## Bug fixes
+
+- **Interactions** A missing "Company link" column has been added to the policy feedback export.
+
+## Internal changes
+
+- Updated GitHub Actions workflow for publishing releases.
+
+
+# Data Hub API 36.1.0 (2020-12-17)
+
+
+## Features
+
+- **Investment** A new field `project_won_date` is added to `InvestmentProjectsDatasetView`.
+
+
+# Data Hub API 36.0.2 (2020-11-19)
+
+
+## Features
+
+- Add `track_total_hits` flag is set to `True` for all entity searches. This will ensure that the `total.hits.value` returns the accurate total value rather than the default limit set to `10000`.
+
+
+# Data Hub API 36.0.1 (2020-11-19)
+
+
+## Features
+
+- Add `track_total_hits` flag is set to `True` for all basic searches. This will ensure that the `total.hits.value` returns the accurate total value rather than the default limit set to `10000`.
+
+
+# Data Hub API 36.0.0 (2020-11-18)
+
+
+## Internal changes
+
+- Update support of ElasticSearch from v6.x to v7.x
+
+
+# Data Hub API 35.12.1 (2020-11-16)
+
+
+## Internal changes
+
+- Increase the time for processes to startup before running health checks.
+
+
+# Data Hub API 35.12.0 (2020-11-13)
+
+
+## Features
+
+- **Interactions** Amend the name of the DSO service type from `DSO interaction` to `UK Defence and Security Exports` for a more descriptive interaction title.
+- Add Export Academy
+
+  Add Specific DIT Export Service or Funding / Export Academy (Export interaction, Export service delivery)
+  Add Specific Service / Export Academy (Other interaction, Other service delivery)
+
+
+# Data Hub API 35.11.1 (2020-10-20)
+
+
+## Internal changes
+
+- Improved logging for email mailbox processing.
+
+
+# Data Hub API 35.11.0 (2020-10-15)
+
+
+## Internal changes
+
+- Email mailbox processing has been moved from Outlook to Amazon S3.
+
+
 # Data Hub API 35.10.0 (2020-09-24)
 
 

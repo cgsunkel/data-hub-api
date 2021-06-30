@@ -111,6 +111,10 @@ class Country(BaseConstantModel):
         verbose_name_plural = 'countries'
 
 
+class TradeAgreement(BaseConstantModel):
+    """Trade agreements for events"""
+
+
 class AdministrativeArea(BaseConstantModel):
     """
     States, provinces etc. within a country.
@@ -123,6 +127,14 @@ class AdministrativeArea(BaseConstantModel):
         related_name='administrative_areas',
         on_delete=models.CASCADE,
     )
+    area_code = models.CharField(blank=True, max_length=3)
+    area_name = models.CharField(blank=True, max_length=255)
+
+    def __str__(self):
+        """
+        To make this clearer for anyone using the admin drop down on this data
+        """
+        return f'{self.name} ({self.country.name})'
 
 
 class Title(BaseConstantModel):
@@ -233,6 +245,10 @@ class Service(MPTTModel, _MPTTObjectName, BaseOrderedConstantModel):
         INVESTMENT_PROJECT_INTERACTION = (
             'investment_project_interaction',
             'Investment project interaction',
+        )
+        TRADE_AGREEMENT_INTERACTION = (
+            'trade_agreement_interaction',
+            'Trade agreement interaction',
         )
         # For interactions added to a company that are about not about export or investment
         OTHER_INTERACTION = ('other_interaction', 'Other interaction')

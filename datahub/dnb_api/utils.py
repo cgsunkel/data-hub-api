@@ -15,9 +15,11 @@ from datahub.core.serializers import AddressSerializer
 from datahub.dnb_api.constants import (
     ALL_DNB_UPDATED_MODEL_FIELDS,
     ALL_DNB_UPDATED_SERIALIZER_FIELDS,
+    NEW_DNB_SEARCH_FEATURE_FLAG,
 )
 from datahub.dnb_api.serializers import DNBCompanySerializer
-from datahub.metadata.models import Country
+from datahub.feature_flag.utils import is_feature_flag_active
+from datahub.metadata.models import AdministrativeArea, Country
 
 logger = logging.getLogger(__name__)
 
@@ -83,12 +85,21 @@ def search_dnb(query_params, request=None):
 
     api_client = _get_api_client(request)
 
-    response = api_client.request(
-        'POST',
-        'companies/search/',
-        json=query_params,
-        timeout=3.0,
-    )
+    if is_feature_flag_active(NEW_DNB_SEARCH_FEATURE_FLAG):
+        response = api_client.request(
+            'POST',
+            'v2/companies/search/',
+            json=query_params,
+            timeout=3.0,
+        )
+    else:
+        response = api_client.request(
+            'POST',
+            'companies/search/',
+            json=query_params,
+            timeout=3.0,
+        )
+
     statsd.incr(f'dnb.search.{response.status_code}')
     return response
 
@@ -151,6 +162,9 @@ def extract_address_from_dnb_company(dnb_company, prefix, ignore_when_missing=()
     country = Country.objects.filter(
         iso_alpha2_code=dnb_company[f'{prefix}_country'],
     ).first() if dnb_company.get(f'{prefix}_country') else None
+    area = AdministrativeArea.objects.filter(
+        area_code=dnb_company[f'{prefix}_area_abbrev_name'],
+    ).first() if dnb_company.get(f'{prefix}_area_abbrev_name') else None
 
     extracted_address = {
         'line_1': dnb_company.get(f'{prefix}_line_1') or '',
@@ -159,6 +173,7 @@ def extract_address_from_dnb_company(dnb_company, prefix, ignore_when_missing=()
         'county': dnb_company.get(f'{prefix}_county') or '',
         'postcode': dnb_company.get(f'{prefix}_postcode') or '',
         'country': country.id if country else None,
+        'area': area.id if area else None,
     }
 
     for field in ignore_when_missing:

@@ -2,7 +2,6 @@
 
 [![CircleCI](https://circleci.com/gh/uktrade/data-hub-api.svg?style=svg)](https://circleci.com/gh/uktrade/data-hub-api)
 [![codecov](https://codecov.io/gh/uktrade/data-hub-api/branch/develop/graph/badge.svg)](https://codecov.io/gh/uktrade/data-hub-api)
-[![Maintainability](https://api.codeclimate.com/v1/badges/853f041744da17eb32bf/maintainability)](https://codeclimate.com/github/uktrade/data-hub-api/maintainability)
 
 Data Hub API provides an API into Data Hub for Data Hub clients. Using Data Hub API you can search for entities and manage companies, contacts and interactions.
 
@@ -21,10 +20,11 @@ This project uses Docker compose to setup and run all the necessary components. 
     cd data-hub-api
     ```
 
-2.  Create a `.env` file from `sample.env`
+2.  Create `.env` files from `sample.env`
 
     ```shell
     cp sample.env .env
+    cp config/settings/sample.env config/settings/.env
     ```
 
     If you're working with data-hub-frontend and mock-sso, `DJANGO_SUPERUSER_SSO_EMAIL_USER_ID`
@@ -230,6 +230,7 @@ pytest -m excluded_dependent_on_redis
 pytest -m "excluded_x or excluded_y"
 pytest -m "not (excluded_x or excluded_y)"
 ```
+**NOTE:** When testing, using the `--reuse-db` can speed up test runs by excluding migrations
 
 To run the linter:
 
@@ -302,6 +303,10 @@ Data Hub API can run on any Heroku-style platform. Configuration is performed vi
 | `AWS_ACCESS_KEY_ID` | No | Used as part of [boto3 auto-configuration](http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials). |
 | `AWS_DEFAULT_REGION` | No | [Default region used by boto3.](http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variable-configuration) |
 | `AWS_SECRET_ACCESS_KEY` | No | Used as part of [boto3 auto-configuration](http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials). |
+| `BED_USERNAME` | Yes | Business Engagement Database setup of Salesforce email account  with [bed configuration](https://loginhub--november.lightning.force.com/). |
+| `BED_PASSWORD` | Yes | Business Engagement Database unencrypted login password. |
+| `BED_TOKEN` | Yes | Business Engagement Database generated security token created with [reset security token](https://loginhub--november.lightning.force.com/lightning/settings/personal/ResetApiToken/home). |
+| `BED_IS_SANDBOX` | Yes | True if this is the sandbox test account. |
 | `CELERY_TASK_ALWAYS_EAGER` | No | Can be set to True when running the app locally to run Celery tasks started from the web process synchronously. Not for use in production. |
 | `CELERY_TASK_SEND_SENT_EVENT` | No | Whether Celery workers send the `task-sent` event (default=True). |
 | `CELERY_WORKER_TASK_EVENTS` | No | Whether Celery workers send task events (by default) for use by monitoring tools such as Flower (default=True). |

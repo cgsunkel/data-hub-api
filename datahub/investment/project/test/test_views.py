@@ -19,6 +19,7 @@ from reversion.models import Version
 
 from datahub.company.test.factories import AdviserFactory, CompanyFactory, ContactFactory
 from datahub.core import constants
+from datahub.core.audit_utils import diff_versions
 from datahub.core.reversion import EXCLUDED_BASE_MODEL_FIELDS
 from datahub.core.test_utils import (
     APITestMixin,
@@ -1857,6 +1858,78 @@ class TestPartialUpdateView(APITestMixin):
         response = self.api_client.patch(url, data=request_data)
         assert response.status_code == status.HTTP_200_OK
 
+    def test_patch_investor_company_updates_country_investment_originates_from(self):
+        """
+        Test that update of investor company will update country investment originates from
+        if project isn't won.
+        """
+        investor_company = CompanyFactory(
+            address_country_id=constants.Country.united_states.value.id,
+        )
+        project = VerifyWinInvestmentProjectFactory(
+            investor_company=investor_company,
+        )
+        assert (
+            str(project.country_investment_originates_from_id)
+            == constants.Country.united_states.value.id
+        )
+        new_investor_company = CompanyFactory(
+            address_country_id=constants.Country.japan.value.id,
+        )
+        url = reverse(
+            'api-v3:investment:investment-item',
+            kwargs={'pk': project.pk},
+        )
+        request_data = {
+            'investor_company': {
+                'id': str(new_investor_company.pk),
+            },
+        }
+        response = self.api_client.patch(url, data=request_data)
+        assert response.status_code == status.HTTP_200_OK
+
+        project.refresh_from_db()
+        assert (
+            str(project.country_investment_originates_from_id)
+            == constants.Country.japan.value.id
+        )
+
+    def test_patch_won_project_investor_company_doesnt_update_country_of_origin(self):
+        """
+        Test that updating investor company of won project, will not update
+        country investment originates from.
+        """
+        investor_company = CompanyFactory(
+            address_country_id=constants.Country.united_states.value.id,
+        )
+        project = WonInvestmentProjectFactory(
+            investor_company=investor_company,
+        )
+        assert (
+            str(project.country_investment_originates_from_id)
+            == constants.Country.united_states.value.id
+        )
+        new_investor_company = CompanyFactory(
+            address_country_id=constants.Country.japan.value.id,
+        )
+        url = reverse(
+            'api-v3:investment:investment-item',
+            kwargs={'pk': project.pk},
+        )
+        request_data = {
+            'investor_company': {
+                'id': str(new_investor_company.pk),
+            },
+        }
+        response = self.api_client.patch(url, data=request_data)
+        assert response.status_code == status.HTTP_200_OK
+
+        project.refresh_from_db()
+        assert (
+            str(project.country_investment_originates_from_id)
+            == constants.Country.united_states.value.id
+        )
+
     def test_patch_team_success(self):
         """Test successfully partially updating a requirements object."""
         crm_team = constants.Team.crm.value
@@ -2301,6 +2374,29 @@ class TestInvestmentProjectVersioning(APITestMixin):
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert Version.objects.count() == 0
+
+    def test_empty_update_doesnt_show_changes(self):
+        """Test that an empty update doesn't show changes."""
+        assert Version.objects.count() == 0
+
+        with reversion.create_revision():
+            project = InvestmentProjectFactory()
+            reversion.set_comment('Initial')
+
+        assert Version.objects.get_for_object(project).count() == 1
+
+        response = self.api_client.patch(
+            reverse('api-v3:investment:investment-item', kwargs={'pk': project.pk}),
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        versions = Version.objects.get_for_object(project)
+        assert len(versions) == 2
+
+        changes = diff_versions(
+            InvestmentProject._meta, versions[0].field_dict, versions[1].field_dict,
+        )
+        assert changes == {}
 
     def test_update_creates_a_new_version(self):
         """Test that updating an investment project creates a new version."""

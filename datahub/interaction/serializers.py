@@ -1,6 +1,7 @@
 from functools import partial
 from operator import not_
 
+from django.core.exceptions import NON_FIELD_ERRORS
 from django.db.transaction import atomic
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy
@@ -40,6 +41,7 @@ from datahub.interaction.validators import (
     ServiceAnswersValidator,
     StatusChangeValidator,
 )
+from datahub.investment.opportunity.models import LargeCapitalOpportunity
 from datahub.investment.project.serializers import NestedInvestmentProjectField
 from datahub.metadata.models import Country, Service, Team
 from datahub.metadata.serializers import SERVICE_LEAF_NODE_NOT_SELECTED_MESSAGE
@@ -83,7 +85,7 @@ NestedCompanyReferralDetail = partial(
 )
 
 
-class InteractionSerializer(serializers.ModelSerializer):
+class BaseInteractionSerializer(serializers.ModelSerializer):
     """
     Interaction serialiser.
 
@@ -105,6 +107,9 @@ class InteractionSerializer(serializers.ModelSerializer):
         'invalid_for_investment': gettext_lazy(
             "This value can't be selected for investment interactions.",
         ),
+        'invalid_for_non_trade_agreement': gettext_lazy(
+            'This field is only valid for trade agreement interactions.',
+        ),
         'invalid_for_non_service_delivery': gettext_lazy(
             'This field is only valid for service deliveries.',
         ),
@@ -123,6 +128,9 @@ class InteractionSerializer(serializers.ModelSerializer):
         'invalid_when_no_policy_feedback': gettext_lazy(
             'This field is only valid when policy feedback has been provided.',
         ),
+        'invalid_when_no_related_trade_agreement': gettext_lazy(
+            'This field is only valid when there are related trade agreements.',
+        ),
         'too_many_contacts_for_event_service_delivery': gettext_lazy(
             'Only one contact can be provided for event service deliveries.',
         ),
@@ -140,8 +148,18 @@ class InteractionSerializer(serializers.ModelSerializer):
     INVALID_FOR_UPDATE = gettext_lazy(
         'This field is invalid for interaction updates.',
     )
+    INVALID_COMPANY_OR_COMPANIES = gettext_lazy(
+        'Only either a company or companies can be provided.',
+    )
 
-    company = NestedRelatedField(Company)
+    company = NestedRelatedField(Company, required=False)
+    companies = NestedRelatedField(
+        Company,
+        many=True,
+        allow_empty=True,
+        # TODO: the field has to be required, once `company` is removed.
+        required=False,
+    )
     contacts = NestedRelatedField(
         Contact,
         many=True,
@@ -165,6 +183,11 @@ class InteractionSerializer(serializers.ModelSerializer):
     is_event = serializers.BooleanField(required=False, allow_null=True)
     event = NestedRelatedField(Event, required=False, allow_null=True)
     investment_project = NestedInvestmentProjectField(required=False, allow_null=True)
+    large_capital_opportunity = NestedRelatedField(
+        LargeCapitalOpportunity,
+        required=False,
+        allow_null=True,
+    )
     modified_by = NestedAdviserField(read_only=True)
     service = NestedRelatedField(Service, required=False, allow_null=True)
     service_answers = serializers.JSONField(required=False)
@@ -211,6 +234,23 @@ class InteractionSerializer(serializers.ModelSerializer):
 
         raise serializers.ValidationError(self.INVALID_FOR_UPDATE)
 
+    def to_internal_value(self, data):
+        """
+        Add support for both `company` and `companies` field.
+
+        TODO: this method should be removed once `company` field is removed.
+        """
+        if 'company' in data and 'companies' in data:
+            raise serializers.ValidationError(
+                {
+                    NON_FIELD_ERRORS: [self.INVALID_COMPANY_OR_COMPANIES],
+                },
+            )
+
+        if 'company' not in data and 'companies' not in data:
+            self.fields['company'].required = True
+        return super().to_internal_value(data)
+
     def validate(self, data):
         """
         Validates and cleans the data.
@@ -219,6 +259,8 @@ class InteractionSerializer(serializers.ModelSerializer):
 
         This is removed because the value is not stored; it is instead inferred from contents
         of the the event field during serialisation.
+
+        It copies company field to companies and other way around.
         """
         self._validate_theme(data)
 
@@ -230,6 +272,12 @@ class InteractionSerializer(serializers.ModelSerializer):
         # TODO: remove this once we give archived a model-level default
         if not self.instance or self.instance.archived is None:
             data['archived'] = False
+
+        # TODO: this should be removed when `company` field is removed.
+        if 'company' in data and data.get('company'):
+            data['companies'] = [data['company']]
+        elif 'companies' in data and len(data.get('companies') or []) > 0:
+            data['company'] = data['companies'][0]
 
         return data
 
@@ -355,6 +403,14 @@ class InteractionSerializer(serializers.ModelSerializer):
                 interaction.created_by,
             )
 
+
+class InteractionSerializer(BaseInteractionSerializer):
+    """Interaction Serializer for V3 endpoint"""
+
+    related_trade_agreements = NestedRelatedField(
+        'metadata.TradeAgreement', many=True, required=False, allow_empty=True,
+    )
+
     class Meta:
         model = Interaction
         extra_kwargs = {
@@ -374,6 +430,7 @@ class InteractionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'company',
+            'companies',
             'contacts',
             'created_on',
             'created_by',
@@ -388,6 +445,7 @@ class InteractionSerializer(serializers.ModelSerializer):
             'communication_channel',
             'grant_amount_offered',
             'investment_project',
+            'large_capital_opportunity',
             'net_company_receipt',
             'service',
             'service_answers',
@@ -407,6 +465,7 @@ class InteractionSerializer(serializers.ModelSerializer):
             'archived_on',
             'archived_reason',
             'company_referral',
+            'related_trade_agreements',
         )
         read_only_fields = (
             'archived_documents_url_path',
@@ -472,6 +531,219 @@ class InteractionSerializer(serializers.ModelSerializer):
                     OperatorRule('policy_issue_types', bool),
                     OperatorRule('policy_feedback_notes', is_not_blank),
                     when=OperatorRule('was_policy_feedback_provided', bool),
+                ),
+                ValidationRule(
+                    'required',
+                    OperatorRule('is_event', is_not_blank),
+                    when=EqualsRule('kind', Interaction.Kind.SERVICE_DELIVERY),
+                ),
+                ValidationRule(
+                    'too_many_contacts_for_event_service_delivery',
+                    OperatorRule('contacts', lambda value: len(value) <= 1),
+                    when=OperatorRule('is_event', bool),
+                ),
+                ValidationRule(
+                    'invalid_for_investment',
+                    OperatorRule('were_countries_discussed', not_),
+                    OperatorRule('export_countries', not_),
+                    when=EqualsRule('theme', Interaction.Theme.INVESTMENT),
+                ),
+                ValidationRule(
+                    'required',
+                    OperatorRule('were_countries_discussed', is_not_blank),
+                    when=AndRule(
+                        IsObjectBeingCreated(),
+                        InRule(
+                            'theme',
+                            [Interaction.Theme.EXPORT, Interaction.Theme.OTHER],
+                        ),
+                    ),
+                ),
+                ValidationRule(
+                    'required',
+                    OperatorRule('export_countries', is_not_blank),
+                    when=AndRule(
+                        OperatorRule('were_countries_discussed', bool),
+                        InRule(
+                            'theme',
+                            [Interaction.Theme.EXPORT, Interaction.Theme.OTHER],
+                        ),
+                    ),
+                ),
+                ValidationRule(
+                    'invalid_when_no_countries_discussed',
+                    OperatorRule('export_countries', is_blank),
+                    when=AndRule(
+                        IsObjectBeingCreated(),
+                        OperatorRule('were_countries_discussed', not_),
+                        InRule(
+                            'theme',
+                            [Interaction.Theme.EXPORT, Interaction.Theme.OTHER],
+                        ),
+                    ),
+                ),
+                # These two rules are only checked for service deliveries as there's a separate
+                # check that event is blank for interactions above which takes precedence (to
+                # avoid duplicate or contradictory error messages)
+                ValidationRule(
+                    'required',
+                    OperatorRule('event', bool),
+                    when=AndRule(
+                        OperatorRule('is_event', bool),
+                        EqualsRule('kind', Interaction.Kind.SERVICE_DELIVERY),
+                    ),
+                ),
+                ValidationRule(
+                    'invalid_for_non_event',
+                    OperatorRule('event', not_),
+                    when=AndRule(
+                        OperatorRule('is_event', not_),
+                        EqualsRule('kind', Interaction.Kind.SERVICE_DELIVERY),
+                    ),
+                ),
+            ),
+        ]
+
+
+class InteractionSerializerV4(BaseInteractionSerializer):
+    """Interaction Serializer for V4 Endpoint"""
+
+    has_related_trade_agreements = serializers.BooleanField(required=True)
+    related_trade_agreements = NestedRelatedField(
+        'metadata.TradeAgreement', many=True, required=True, allow_empty=True,
+    )
+
+    class Meta:
+        model = Interaction
+        extra_kwargs = {
+            # Date is a datetime in the model, but only the date component is used
+            # (at present). Setting the formats as below effectively makes the field
+            # behave like a date field without changing the schema and breaking the
+            # v1 API.
+            'date': {'format': '%Y-%m-%d', 'input_formats': ['%Y-%m-%d']},
+            'grant_amount_offered': {'min_value': 0},
+            'net_company_receipt': {'min_value': 0},
+            'status': {'default': Interaction.Status.COMPLETE},
+            'theme': {
+                'allow_blank': False,
+                'default': None,
+            },
+        }
+        fields = (
+            'id',
+            'company',
+            'companies',
+            'contacts',
+            'created_on',
+            'created_by',
+            'event',
+            'is_event',
+            'status',
+            'kind',
+            'modified_by',
+            'modified_on',
+            'date',
+            'dit_participants',
+            'communication_channel',
+            'grant_amount_offered',
+            'investment_project',
+            'large_capital_opportunity',
+            'net_company_receipt',
+            'service',
+            'service_answers',
+            'service_delivery_status',
+            'subject',
+            'theme',
+            'notes',
+            'archived_documents_url_path',
+            'policy_areas',
+            'policy_feedback_notes',
+            'policy_issue_types',
+            'was_policy_feedback_provided',
+            'were_countries_discussed',
+            'export_countries',
+            'archived',
+            'archived_by',
+            'archived_on',
+            'archived_reason',
+            'company_referral',
+            'has_related_trade_agreements',
+            'related_trade_agreements',
+        )
+        read_only_fields = (
+            'archived_documents_url_path',
+            'archived',
+            'archived_by',
+            'archived_on',
+            'archived_reason',
+        )
+        # Note: These validators are also used by the admin site import interactions tool
+        # (see the admin_csv_import sub-package)
+        validators = [
+            HasAssociatedInvestmentProjectValidator(),
+            ContactsBelongToCompanyValidator(),
+            StatusChangeValidator(),
+            ServiceAnswersValidator(),
+            DuplicateExportCountryValidator(),
+            RulesBasedValidator(
+                ValidationRule(
+                    'required',
+                    OperatorRule('communication_channel', bool),
+                    when=AndRule(
+                        EqualsRule('kind', Interaction.Kind.INTERACTION),
+                        EqualsRule('status', Interaction.Status.COMPLETE),
+                    ),
+                ),
+                ValidationRule(
+                    'required',
+                    OperatorRule('service', bool),
+                    when=EqualsRule('status', Interaction.Status.COMPLETE),
+                ),
+                ValidationRule(
+                    'invalid_for_investment',
+                    EqualsRule('kind', Interaction.Kind.INTERACTION),
+                    when=EqualsRule('theme', Interaction.Theme.INVESTMENT),
+                ),
+                ValidationRule(
+                    'invalid_for_non_interaction',
+                    OperatorRule('investment_project', not_),
+                    when=EqualsRule('kind', Interaction.Kind.SERVICE_DELIVERY),
+                ),
+                ValidationRule(
+                    'invalid_for_service_delivery',
+                    OperatorRule('communication_channel', not_),
+                    when=EqualsRule('kind', Interaction.Kind.SERVICE_DELIVERY),
+                ),
+                ValidationRule(
+                    'invalid_for_non_service_delivery',
+                    OperatorRule('is_event', is_blank),
+                    OperatorRule('event', is_blank),
+                    OperatorRule('service_delivery_status', is_blank),
+                    when=EqualsRule('kind', Interaction.Kind.INTERACTION),
+                ),
+                ValidationRule(
+                    'invalid_when_no_policy_feedback',
+                    OperatorRule('policy_issue_types', not_),
+                    OperatorRule('policy_areas', not_),
+                    OperatorRule('policy_feedback_notes', not_),
+                    when=OperatorRule('was_policy_feedback_provided', not_),
+                ),
+                ValidationRule(
+                    'required',
+                    OperatorRule('policy_areas', bool),
+                    OperatorRule('policy_issue_types', bool),
+                    OperatorRule('policy_feedback_notes', is_not_blank),
+                    when=OperatorRule('was_policy_feedback_provided', bool),
+                ),
+                ValidationRule(
+                    'required',
+                    OperatorRule('related_trade_agreements', bool),
+                    when=OperatorRule('has_related_trade_agreements', bool),
+                ),
+                ValidationRule(
+                    'invalid_when_no_related_trade_agreement',
+                    OperatorRule('related_trade_agreements', not_),
+                    when=OperatorRule('has_related_trade_agreements', not_),
                 ),
                 ValidationRule(
                     'required',

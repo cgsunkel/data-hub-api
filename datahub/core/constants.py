@@ -3,6 +3,15 @@ from enum import Enum
 
 Constant = namedtuple('Constant', ('name', 'id'))
 OrderedConstant = namedtuple('OrderedConstant', ('name', 'id', 'order'))
+AdministrativeAreaConstant = namedtuple(
+    'AdministrativeAreaConstant',
+    (
+        'name',
+        'id',
+        'area_code',
+        'country_id',
+    ),
+)
 
 
 class Country(Enum):
@@ -22,6 +31,30 @@ class Country(Enum):
     montserrat = Constant('Montserrat', '1350bdb8-5d95-e211-a939-e4115bead28a')
     united_kingdom = Constant('United Kingdom', '80756b9a-5d95-e211-a939-e4115bead28a')
     united_states = Constant('United States', '81756b9a-5d95-e211-a939-e4115bead28a')
+
+
+class AdministrativeArea(Enum):
+    """Administrative Areas"""
+
+    # United States
+    alabama = AdministrativeAreaConstant(
+        'Alabama',
+        '8ad3f33a-ace8-40ec-bd2c-638fdc3024ea',
+        'AL',
+        Country.united_states.value.id,
+    )
+    new_york = AdministrativeAreaConstant(
+        'New York',
+        'aa65b701-244a-41fc-bd31-0a546303106a',
+        'NY',
+        Country.united_states.value.id,
+    )
+    texas = AdministrativeAreaConstant(
+        'Texas',
+        'c35c119a-bc4d-4e48-9ace-167dbe8cb695',
+        'TX',
+        Country.united_states.value.id,
+    )
 
 
 class SectorCluster(Enum):
@@ -267,6 +300,14 @@ class InvestmentProjectStage(Enum):
     )
     won = OrderedConstant('Won', '945ea6d1-eee3-4f5b-9144-84a75b71b8e6', 600.0)
 
+    @classmethod
+    def get_by_id(cls, item_id):
+        """Gets the corresponding item for a given id."""
+        return next(
+            (item for item in cls if str(item.value.id) == str(item_id)),
+            None,
+        )
+
 
 class InvestmentType(Enum):
     """Investment type constants."""
@@ -354,3 +395,60 @@ class InvestmentStrategicDriver(Enum):
     access_to_market = Constant(
         'Access to market', '382aa6d1-a362-4166-a09d-f579d9f3be75',
     )
+
+
+class ExportSegment(Enum):
+    """ExportSegment type constants."""
+
+    hep = Constant('hep', 'High export potential')
+    non_hep = Constant('non-hep', 'Not high export potential')
+
+
+class ExportSubSegment(Enum):
+    """ExportSubSegment type constants."""
+
+    sustain_nurture_and_grow = Constant(
+        'sustain_nurture_and_grow',
+        'Sustain: nurture & grow',
+    )
+    sustain_develop_export_capability = Constant(
+        'sustain_develop_export_capability',
+        'Sustain: develop export capability',
+    )
+    sustain_communicate_benefits = Constant(
+        'sustain_communicate_benefits',
+        'Sustain: communicate benefits',
+    )
+    sustain_increase_competitiveness = Constant(
+        'sustain_increase_competitiveness',
+        'Sustain: increase competitiveness',
+    )
+    reassure_nurture_and_grow = Constant(
+        'reassure_nurture_and_grow',
+        'Reassure: nurture & grow',
+    )
+    reassure_develop_export_capability = Constant(
+        'reassure_develop_export_capability',
+        'Reassure: develop export capability',
+    )
+    reassure_leave_be = Constant(
+        'reassure_leave_be',
+        'Reassure: leave be',
+    )
+    reassure_change_the_game = Constant(
+        'reassure_change_the_game',
+        'Reassure: change the game',
+    )
+    promote_develop_export_capability = Constant(
+        'promote_develop_export_capability',
+        'Promote: develop export capability',
+    )
+    promote_communicate_benefits = Constant(
+        'promote_communicate_benefits',
+        'Promote: communicate benefits',
+    )
+    promote_change_the_game = Constant(
+        'promote_change_the_game',
+        'Promote: change the game',
+    )
+    challenge = Constant('challenge', 'Challenge')

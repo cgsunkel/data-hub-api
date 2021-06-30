@@ -4,9 +4,7 @@ import pytest
 from django.utils.timezone import utc
 from freezegun import freeze_time
 
-from datahub.company.constants import BusinessTypeConstant
 from datahub.company.test.factories import CompanyFactory
-from datahub.core.constants import Country, Sector, UKRegion
 from datahub.dnb_api.constants import (
     FEATURE_FLAG_DNB_COMPANY_UPDATES,
 )
@@ -53,6 +51,7 @@ def dnb_response_non_uk():
                 'address_town': 'New York',
                 'address_county': '',
                 'address_postcode': '10033-1062',
+                'address_area': None,
                 'address_country': 'US',
                 'annual_sales': 1000000.0,
                 'annual_sales_currency': 'USD',
@@ -131,37 +130,13 @@ def dnb_company_search_datahub_companies():
 
 
 @pytest.fixture
-def investigation_payload():
-    """
-    Valid DNB company investigation payload.
-    """
-    return {
-        'business_type': BusinessTypeConstant.company.value.id,
-        'name': 'Test Company',
-        'website': 'http://www.test.com',
-        'telephone_number': '12345678',
-        'address': {
-            'line_1': 'Foo',
-            'line_2': 'Bar',
-            'town': 'Baz',
-            'county': 'Qux',
-            'country': {
-                'id': Country.united_kingdom.value.id,
-            },
-            'postcode': 'AB5 XY2',
-        },
-        'sector': Sector.renewable_energy_wind.value.id,
-        'uk_region': UKRegion.east_midlands.value.id,
-    }
-
-
-@pytest.fixture
 def base_company_dict():
     """
     A basic dictionary of values for defaulted Company fields - this should be used
     as a foundation for `model_to_dict` comparisons.
     """
     return {
+        'address_area': None,
         'archived': False,
         'archived_by': None,
         'archived_on': None,
@@ -184,7 +159,10 @@ def base_company_dict():
         'one_list_tier': None,
         'pending_dnb_investigation': False,
         'reference_code': '',
+        'registered_address_area': None,
         'sector': '',
+        'export_segment': '',
+        'export_sub_segment': '',
         'trading_names': [],
         'transfer_reason': '',
         'transferred_by': None,

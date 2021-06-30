@@ -14,8 +14,9 @@ from datahub.interaction.models import (
     PolicyIssueType,
     ServiceDeliveryStatus,
 )
+from datahub.investment.opportunity.test.factories import LargeCapitalOpportunityFactory
 from datahub.investment.project.test.factories import InvestmentProjectFactory
-from datahub.metadata.models import Country
+from datahub.metadata.models import Country, TradeAgreement
 from datahub.metadata.test.factories import ServiceFactory
 
 
@@ -71,6 +72,13 @@ class InteractionFactoryBase(factory.django.DjangoModelFactory):
         return [ContactFactory(company=self.company)] if self.company else []
 
     @to_many_field
+    def companies(self):
+        """
+        Add support for setting `companies`.
+        """
+        return [self.company] if self.company else []
+
+    @to_many_field
     def dit_participants(self, **kwargs):
         """
         Instances of InteractionDITParticipant.
@@ -98,6 +106,25 @@ class CompanyInteractionFactory(InteractionFactoryBase):
     communication_channel = factory.LazyFunction(
         lambda: random_obj_for_model(CommunicationChannel),
     )
+
+
+class CompaniesInteractionFactory(InteractionFactoryBase):
+    """Factory for creating an interaction relating to companies."""
+
+    # TODO: this factory should be removed once `company` field is removed
+    kind = Interaction.Kind.INTERACTION
+    theme = factory.Iterator(tuple(filter(None, Interaction.Theme.values)))
+    communication_channel = factory.LazyFunction(
+        lambda: random_obj_for_model(CommunicationChannel),
+    )
+    company = None
+
+    @to_many_field
+    def companies(self):
+        """
+        Add support for setting `companies`.
+        """
+        return [CompanyFactory()]
 
 
 class CompanyReferralInteractionFactory(CompanyInteractionFactory):
@@ -151,6 +178,27 @@ class InvestmentProjectInteractionFactory(InteractionFactoryBase):
     communication_channel = factory.LazyFunction(
         lambda: random_obj_for_model(CommunicationChannel),
     )
+
+
+class LargeCapitalOpportunityInteractionFactory(InteractionFactoryBase):
+    """Factory for creating an interaction relating to a large capital opportunity."""
+
+    kind = Interaction.Kind.INTERACTION
+    theme = Interaction.Theme.LARGE_CAPITAL_OPPORTUNITY
+    large_capital_opportunity = factory.SubFactory(LargeCapitalOpportunityFactory)
+
+
+class CompanyInteractionFactoryWithRelatedTradeAgreements(CompanyInteractionFactory):
+    """Factory for creating a company interaction with related_trade_agreements"""
+
+    has_related_trade_agreements = True
+
+    @to_many_field
+    def related_trade_agreements(self):
+        """
+        related_trade_agreements field.
+        """
+        return TradeAgreement.objects.all()[:3]
 
 
 class ServiceDeliveryFactory(InteractionFactoryBase):

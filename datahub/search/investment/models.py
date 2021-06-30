@@ -2,7 +2,7 @@ from elasticsearch_dsl import Boolean, Date, Double, Integer, Keyword, Long, Obj
 
 from datahub.search import dict_utils
 from datahub.search import fields
-from datahub.search.models import BaseESModel, DEFAULT_MAPPING_TYPE
+from datahub.search.models import BaseESModel
 
 
 def _related_investment_project_field():
@@ -65,6 +65,7 @@ class InvestmentProject(BaseESModel):
     fdi_value = fields.id_name_field()
     foreign_equity_investment = Double()
     government_assistance = Boolean()
+    incomplete_fields = Text()
     intermediate_company = fields.id_name_field()
     investor_company = fields.id_name_partial_field()
     investor_company_country = fields.id_name_field()
@@ -123,6 +124,7 @@ class InvestmentProject(BaseESModel):
     uk_region_locations = fields.id_name_field()
     will_new_jobs_last_two_years = Boolean()
     level_of_involvement_simplified = Keyword()
+    latest_interaction = fields.interaction_field()
 
     gross_value_added = Double()
 
@@ -149,6 +151,7 @@ class InvestmentProject(BaseESModel):
         'investor_company': dict_utils.id_name_dict,
         'investor_company_country': dict_utils.id_name_dict,
         'investor_type': dict_utils.id_name_dict,
+        'latest_interaction': dict_utils.interaction_dict,
         'level_of_involvement': dict_utils.id_name_dict,
         'likelihood_to_land': dict_utils.id_name_dict,
         'project_assurance_adviser': dict_utils.adviser_dict_with_team,
@@ -180,11 +183,3 @@ class InvestmentProject(BaseESModel):
         'investor_company.name.trigram',
         'project_code.trigram',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DEFAULT_MAPPING_TYPE
-
-    class Index:
-        doc_type = DEFAULT_MAPPING_TYPE

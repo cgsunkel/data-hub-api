@@ -46,7 +46,7 @@ class TestUpdateFromDNB(AdminTestMixin):
         response = self.client.get(change_url)
         assert update_url in response.rendered_content
         response = self.client.get(update_url)
-        response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK
 
     def test_get_view_permission_only(self):
         """
@@ -78,7 +78,7 @@ class TestUpdateFromDNB(AdminTestMixin):
 
     def test_post(self, requests_mock, dnb_response):
         """
-        Test that a post request to 'upddate-from-dnb' updates
+        Test that a post request to 'update-from-dnb' updates
         the company.
         """
         _, update_url = self._create_company(

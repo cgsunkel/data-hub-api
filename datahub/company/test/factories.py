@@ -55,6 +55,7 @@ class CompanyFactory(factory.django.DjangoModelFactory):
     address_1 = factory.Sequence(lambda x: f'{x} Fake Lane')
     address_town = 'Woodside'
     address_postcode = factory.Faker('postcode')
+    address_area_id = None
     address_country_id = constants.Country.united_kingdom.value.id
 
     registered_address_1 = factory.Sequence(lambda n: f'{n} Foo st.')
@@ -77,6 +78,8 @@ class CompanyFactory(factory.django.DjangoModelFactory):
     is_number_of_employees_estimated = True
     archived_documents_url_path = factory.Faker('uri_path')
     created_on = now()
+    export_segment = constants.ExportSegment.hep.value.id
+    export_sub_segment = constants.ExportSubSegment.challenge.value.id
 
     @to_many_field
     def export_to_countries(self):  # noqa: D102
@@ -108,7 +111,13 @@ class CompanyFactory(factory.django.DjangoModelFactory):
         model = 'company.Company'
 
 
-class SubsidiaryFactory(CompanyFactory):
+class CompanyWithAreaFactory(CompanyFactory):
+    """Company factory with `address_area_id` populated"""
+
+    address_area_id = constants.AdministrativeArea.texas.value.id
+
+
+class SubsidiaryFactory(CompanyWithAreaFactory):
     """Subsidiary factory."""
 
     global_headquarters = factory.SubFactory(
@@ -127,7 +136,7 @@ class OneListCoreTeamMemberFactory(factory.django.DjangoModelFactory):
         model = 'company.OneListCoreTeamMember'
 
 
-class ArchivedCompanyFactory(CompanyFactory):
+class ArchivedCompanyFactory(CompanyWithAreaFactory):
     """Factory for an archived company."""
 
     archived = True

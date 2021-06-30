@@ -61,6 +61,9 @@ def address_dict(obj, prefix='address'):
         'town': _attrgetter_with_default(f'{prefix}_town', ''),
         'county': _attrgetter_with_default(f'{prefix}_county', ''),
         'postcode': _attrgetter_with_default(f'{prefix}_postcode', ''),
+        'area': lambda obj: id_name_dict(
+            getattr(obj, f'{prefix}_area'),
+        ),
         'country': lambda obj: id_name_dict(
             getattr(obj, f'{prefix}_country'),
         ),
@@ -196,6 +199,18 @@ def sector_dict(obj):
         'ancestors': [{
             'id': str(ancestor.id),
         } for ancestor in obj.get_ancestors()],
+    }
+
+
+def interaction_dict(obj):
+    """Creates a dictionary for an interaction."""
+    if obj is None:
+        return None
+
+    return {
+        'id': str(obj.id),
+        'date': obj.date,
+        'subject': obj.subject,
     }
 
 

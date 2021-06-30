@@ -38,11 +38,13 @@ from datahub.company_referral.test.factories import (
 from datahub.core.exceptions import DataHubException
 from datahub.core.model_helpers import get_related_fields
 from datahub.interaction.test.factories import (
+    CompaniesInteractionFactory,
     CompanyInteractionFactory,
     InteractionExportCountryFactory,
     InvestmentProjectInteractionFactory,
 )
 from datahub.investment.investor_profile.test.factories import LargeCapitalInvestorProfileFactory
+from datahub.investment.opportunity.test.factories import LargeCapitalOpportunityFactory
 from datahub.investment.project.evidence.test.factories import EvidenceDocumentFactory
 from datahub.investment.project.proposition.test.factories import PropositionFactory
 from datahub.investment.project.test.factories import InvestmentProjectFactory
@@ -68,7 +70,6 @@ INTERACTION_DELETE_BEFORE_DATETIME = FROZEN_TIME - INTERACTION_EXPIRY_PERIOD
 INVESTMENT_PROJECT_DELETE_BEFORE_DATETIME = FROZEN_TIME - INVESTMENT_PROJECT_EXPIRY_PERIOD
 ORDER_DELETE_BEFORE_DATETIME = FROZEN_TIME - ORDER_EXPIRY_PERIOD
 INVESTOR_PROFILE_DELETE_BEFORE_DATETIME = FROZEN_TIME - INVESTOR_PROFILE_EXPIRY_PERIOD
-
 
 MAPPING = {
     'company.Company': {
@@ -169,6 +170,17 @@ MAPPING = {
                 ],
             },
             {
+                'factory': CompaniesInteractionFactory,
+                'field': 'companies',
+                'expired_objects_kwargs': [],
+                'unexpired_objects_kwargs': [
+                    {
+                        'created_on': COMPANY_DELETE_BEFORE_DATETIME - relativedelta(days=1),
+                        'modified_on': COMPANY_DELETE_BEFORE_DATETIME - relativedelta(days=1),
+                    },
+                ],
+            },
+            {
                 'factory': InvestmentProjectFactory,
                 'field': 'intermediate_company',
                 'expired_objects_kwargs': [],
@@ -236,6 +248,14 @@ MAPPING = {
                             INVESTOR_PROFILE_DELETE_BEFORE_DATETIME + relativedelta(days=1),
                     },
                 ],
+            },
+            {
+                'factory': LargeCapitalOpportunityFactory,
+                'field': 'promoters',
+                'expired_objects_kwargs': [],
+                # Companies shouldn't be deleted if there is a related large capital
+                # opportunity (the opportunities have to expired and be deleted first).
+                'unexpired_objects_kwargs': [{}],
             },
         ],
     },
@@ -353,6 +373,7 @@ MAPPING = {
         'factory': CompanyInteractionFactory,
         'implicitly_deletable_models': {
             'interaction.Interaction_contacts',
+            'interaction.Interaction_companies',
             'interaction.InteractionDITParticipant',
             'interaction.InteractionExportCountry',
         },
@@ -514,6 +535,14 @@ MAPPING = {
                             INVESTMENT_PROJECT_DELETE_BEFORE_DATETIME - relativedelta(days=1),
                     },
                 ],
+            },
+            {
+                'factory': LargeCapitalOpportunityFactory,
+                'field': 'investment_projects',
+                'expired_objects_kwargs': [],
+                # Investment Projects shouldn't be deleted if there is a related large capital
+                # opportunity (the opportunities have to expired and be deleted first).
+                'unexpired_objects_kwargs': [{}],
             },
         ],
     },
@@ -760,7 +789,7 @@ def test_run(
     if has_search_app:
         search_app = get_search_app_by_model(model)
         read_alias = search_app.es_model.get_read_alias()
-        assert es_with_signals.count(read_alias)['count'] == total_model_records
+        assert es_with_signals.count(index=read_alias)['count'] == total_model_records
 
     assert model.objects.count() == total_model_records
 
@@ -772,7 +801,7 @@ def test_run(
     assert model.objects.count() == total_model_records - num_expired_records
 
     if has_search_app:
-        assert es_with_signals.count(read_alias)['count'] == (
+        assert es_with_signals.count(index=read_alias)['count'] == (
             total_model_records
             - num_expired_records
         )
@@ -828,7 +857,7 @@ def test_simulate(
     if has_search_app:
         search_app = get_search_app_by_model(model)
         read_alias = search_app.es_model.get_read_alias()
-        assert es_with_signals.count(read_alias)['count'] == 3
+        assert es_with_signals.count(index=read_alias)['count'] == 3
 
     assert model.objects.count() == 3
 
@@ -853,7 +882,7 @@ def test_simulate(
     assert model.objects.count() == 3
 
     if has_search_app:
-        assert es_with_signals.count(read_alias)['count'] == 3
+        assert es_with_signals.count(index=read_alias)['count'] == 3
 
 
 @freeze_time(FROZEN_TIME)

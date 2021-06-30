@@ -15,6 +15,15 @@
     dit_team: 162a3959-9798-e211-a939-e4115bead28a  # International Trade Team
 
 - model: company.advisor
+  pk: 95a99736-5402-11eb-ae93-0242ac130002
+  fields:
+    email: Ava.Walsh@example.com
+    first_name: Ava
+    last_name: Walsh
+    is_active: false
+    dit_team: 162a3959-9798-e211-a939-e4115bead28a  # International Trade Team
+
+- model: company.advisor
   pk: e83a608e-84a4-11e6-ae22-56b6b6499611
   fields:
     email: Puck.Head@example.com
@@ -180,6 +189,8 @@
     future_interest_countries:
       - 37afd8d0-5d95-e211-a939-e4115bead28a
     sector: 355f977b-8ac3-e211-a646-e4115bead28a
+    export_segment: hep
+    export_sub_segment: sustain_nurture_and_grow
     address_1: 12 Alpha Street
     address_town: Volcanus
     address_postcode: NE28 5AQ
@@ -198,6 +209,7 @@
   fields:
     name: Mars Exports Ltd
     business_type: 98d14e94-5d95-e211-a939-e4115bead28a  # Company
+    duns_number: '000345679'
     employee_range: 41afd8d0-5d95-e211-a939-e4115bead28a
     turnover_range: 7a4cd12a-6095-e211-a939-e4115bead28a
     export_to_countries:
@@ -206,17 +218,46 @@
     future_interest_countries:
       - 37afd8d0-5d95-e211-a939-e4115bead28a
     sector: 355f977b-8ac3-e211-a646-e4115bead28a
+    export_segment: non_hep
+    export_sub_segment: reassure_nurture_and_grow
     address_1: 12 First Street
-    address_town: New York
-    address_postcode: 765413
+    address_town: Virginia City
+    address_postcode: 73301
+    address_area: c35c119a-bc4d-4e48-9ace-167dbe8cb695
     address_country: 81756b9a-5d95-e211-a939-e4115bead28a  # US
     registered_address_1: 12 First Street
-    registered_address_town: New York
-    registered_address_postcode: 765413
+    registered_address_town: Virginia City
+    registered_address_postcode: 73301-1234
+    registered_address_area: c35c119a-bc4d-4e48-9ace-167dbe8cb695
     registered_address_country: 81756b9a-5d95-e211-a939-e4115bead28a  # US
     description: This is a dummy company for testing
     created_on: '2017-10-16T11:00:00Z'
     modified_on: '2017-11-16T11:00:00Z'
+
+- model: company.company
+  pk: 008ba003-b528-4e79-b209-49fcfcceb371
+  fields:
+    name: Motorleaf
+    business_type: 98d14e94-5d95-e211-a939-e4115bead28a  # Company
+    duns_number: '012345678'
+    employee_range: 41afd8d0-5d95-e211-a939-e4115bead28a
+    turnover_range: 7a4cd12a-6095-e211-a939-e4115bead28a
+    export_to_countries:
+      - 82756b9a-5d95-e211-a939-e4115bead28a
+      - 83756b9a-5d95-e211-a939-e4115bead28a
+    future_interest_countries:
+      - 37afd8d0-5d95-e211-a939-e4115bead28a
+    sector: 355f977b-8ac3-e211-a646-e4115bead28a
+    export_segment: non_hep
+    export_sub_segment: reassure_nurture_and_grow
+    address_1: 5000 Rue Saint-Patrick,
+    address_town: Montréal
+    address_postcode: H4E 1A8
+    address_area: 5fc4ea61-75fe-415d-8ff0-2a2034ff6c86
+    address_country: 5daf72a6-5d95-e211-a939-e4115bead28a  # CA
+    description: Canadian company for testing
+    created_on: '2020-10-16T11:00:00Z'
+    modified_on: '2020-11-16T11:00:00Z'
 
 - model: company.company
   pk: 0fb3379c-341c-4da4-b825-bf8d47b26baa
@@ -231,6 +272,8 @@
     future_interest_countries:
       - 37afd8d0-5d95-e211-a939-e4115bead28a
     sector: 355f977b-8ac3-e211-a646-e4115bead28a
+    export_segment: hep
+    export_sub_segment: reassure_change_the_game
     address_1: 12 St George's Road
     address_town: Paris
     address_postcode: 75001
@@ -282,13 +325,15 @@
     number_of_employees: 95
     is_number_of_employees_estimated: True
     sector: 355f977b-8ac3-e211-a646-e4115bead28a
+    export_segment: hep
+    export_sub_segment: promote_change_the_game
     address_1: 1 Main Road
     address_town: Rome
-    address_postcode: '001122'
+    address_postcode: 10443
     address_country: 84756b9a-5d95-e211-a939-e4115bead28a  # Italy
     registered_address_1: 1 Main Road
     registered_address_town: Rome
-    registered_address_postcode: '001122'
+    registered_address_postcode: 10644
     registered_address_country: 84756b9a-5d95-e211-a939-e4115bead28a  # Italy
     description: This is a dummy company for testing companies with DnB data
     duns_number: '000000001'
@@ -301,6 +346,8 @@
     name: One List Subsidiary Ltd
     business_type: 98d14e94-5d95-e211-a939-e4115bead28a  # Company
     sector: 7ebb9fc6-5f95-e211-a939-e4115bead28a
+    export_segment: hep
+    export_sub_segment: challenge
     address_1: 100 Fordham Rd
     address_town: Hainault
     address_postcode: IG6 7SQ
@@ -324,6 +371,8 @@
     employee_range: 41afd8d0-5d95-e211-a939-e4115bead28a
     turnover_range: 7a4cd12a-6095-e211-a939-e4115bead28a
     sector: 355f977b-8ac3-e211-a646-e4115bead28a
+    export_segment: hep
+    export_sub_segment: sustain_increase_competitiveness
     address_1: 16 Getabergsvagen
     address_town: Geta
     address_postcode: 22340
@@ -364,13 +413,17 @@
     future_interest_countries:
       - 37afd8d0-5d95-e211-a939-e4115bead28a
     sector: 355f977b-8ac3-e211-a646-e4115bead28a
+    export_segment: hep
+    export_sub_segment: sustain_increase_competitiveness
     address_1: 12 First Street
     address_town: New York
-    address_postcode: 765413
+    address_postcode: 10001
+    address_area: aa65b701-244a-41fc-bd31-0a546303106a
     address_country: 81756b9a-5d95-e211-a939-e4115bead28a  # US
     registered_address_1: 12 First Street
     registered_address_town: New York
-    registered_address_postcode: 765413
+    registered_address_postcode: 10101
+    registered_address_area: aa65b701-244a-41fc-bd31-0a546303106a
     registered_address_country: 81756b9a-5d95-e211-a939-e4115bead28a  # US
     description: This is a dummy duplicate company for testing
     created_on: '2017-03-05T12:00:00Z'
@@ -848,6 +901,8 @@
     created_on: '2020-02-01T10:00:00Z'
     modified_by: 7bad8082-4978-4fe8-a018-740257f01637
     modified_on: '2020-02-01T10:00:00Z'
+    related_trade_agreements:
+      - 20e08a38-95a8-4250-bd5b-9d7f0dfc9387
 
 - model: interaction.interactionditparticipant
   pk: 9
@@ -1789,3 +1844,208 @@
     is_active: true
     created_by: 7bad8082-4978-4fe8-a018-740257f01637
     created_on: '2018-01-23T00:00:00Z'
+
+- model: feature_flag.featureflag
+  pk: e14f907e-6488-4e43-8f9b-9089a02112a4
+  fields:
+    code: capital-investments-filters
+    description: This is a flag to show filters on CI profiles
+    is_active: true
+    created_by: 7bad8082-4978-4fe8-a018-740257f01637
+    created_on: '2018-01-23T00:00:00Z'
+
+- model: investor_profile.largecapitalinvestorprofile
+  pk: 04d9215f-f9f9-4183-af85-326e7cf5482b
+  fields:
+    asset_classes_of_interest:
+    - 66507830-595d-432e-8521-9daf11785265
+    - f2b6c1a7-4d4f-4fd9-884b-5e1f5b3525be
+    - 1536f225-f755-44d1-8bdd-e89a1964966b
+    - 38c8d05c-2899-4433-a15c-6598d76dd69b
+    construction_risks:
+    - 79cc3963-9376-4771-9cba-c1b3cc0ade33
+    created_by: a80ff5fd-8904-4940-bf96-fe8047e34be5
+    created_on: '2021-01-14T11:23:23.125307+00:00'
+    deal_ticket_sizes:
+    - 56492c50-aa12-404d-a14e-1eaae24ac6ee
+    desired_deal_roles:
+    - 29d930e6-de2f-403d-87dc-764bc418d33a
+    global_assets_under_management: 12000000000
+    investable_capital: 6000000000
+    investment_types:
+    - 24826b7c-e3df-4a76-80d4-4fe2661b838e
+    - ef615dde-49d8-41dd-9ddd-a00c78004135
+    investor_company: 0fb3379c-341c-4da4-b825-bf8d47b26baa
+    investor_description: Here is the investor description.
+    investor_type: 113d864c-1657-4e01-b215-2fe8797cdf12
+    minimum_equity_percentage: f7b72f8b-399e-43b2-b7ef-f42a154ef916
+    minimum_return_rate: 6fec56ba-0be9-4931-bd76-16e11924ec55
+    modified_by: a80ff5fd-8904-4940-bf96-fe8047e34be5
+    modified_on: '2021-01-14T11:25:04.805742+00:00'
+    notes_on_locations: ''
+    other_countries_being_considered: []
+    required_checks_conducted: 02d6fc9b-fbb9-4621-b247-d86f2487898e
+    required_checks_conducted_by: 453a608e-84a4-11e6-ea22-56b6b6499622
+    restrictions:
+    - 5b4f5dc5-c836-4572-afd2-013776ed00c5
+    time_horizons:
+    - d2d1bdbb-c42a-459c-adaa-fce45ce08cc9
+    - d186343f-ed66-47e4-9ab0-258f583ff3cb
+    uk_region_locations: []
+
+- model: investor_profile.largecapitalinvestorprofile
+  pk: dab10369-81ff-40b9-addb-04afad44170d
+  fields:
+    asset_classes_of_interest: []
+    construction_risks: []
+    created_by: a80ff5fd-8904-4940-bf96-fe8047e34be5
+    created_on: '2021-01-01T11:25:29.711322+00:00'
+    deal_ticket_sizes: []
+    desired_deal_roles: []
+    global_assets_under_management: 3000000
+    investable_capital: 1000
+    investment_types: []
+    investor_company: 3cb006bb-c8bd-4062-bc8c-c086273b84e1
+    investor_description: description
+    investor_type: 1be9c7d0-3cc1-435d-ace5-8c7e3686e022
+    minimum_equity_percentage: null
+    minimum_return_rate: null
+    modified_by: 7bad8082-4978-4fe8-a018-740257f01637
+    modified_on: '2021-01-10T11:26:03.680015+00:00'
+    notes_on_locations: ''
+    other_countries_being_considered: []
+    required_checks_conducted: 9beab8fc-1094-49b4-97d0-37bc7a9de631
+    required_checks_conducted_by: 453a608e-84a4-11e6-ea22-56b6b6499622
+    restrictions: []
+    time_horizons: []
+    uk_region_locations: []
+
+- model: investor_profile.largecapitalinvestorprofile
+  pk: e93a5088-cb72-42e7-b0c6-e84699b56a0e
+  fields:
+    asset_classes_of_interest:
+    - 096772cb-bd14-4bdf-bd5a-5b430e651048
+    - b4516edf-c151-47d6-9c12-1c2185cacff0
+    - 38c8d05c-2899-4433-a15c-6598d76dd69b
+    construction_risks:
+    - 884deaf6-cb0c-4036-b78c-efd92cb10098
+    created_by: 7bad8082-4978-4fe8-a018-740257f01637
+    created_on: '2020-12-03T11:26:22.243842+00:00'
+    deal_ticket_sizes:
+    - 359f4183-5617-47a9-a2ac-39e2c60d5088
+    - e5ae2715-aa2c-4aa2-b047-f247625322a3
+    desired_deal_roles:
+    - 29d930e6-de2f-403d-87dc-764bc418d33a
+    global_assets_under_management: 1000000000000
+    investable_capital: 1000000
+    investment_types:
+    - 4170d99a-02fc-46ee-8fd4-3fe786717708
+    investor_company: 0f5216e0-849f-11e6-ae22-56b6b6499611
+    investor_description: Some information
+    investor_type: ac294431-94ba-4318-9b27-75f0ada99c0d
+    minimum_equity_percentage: ec061f70-b287-41cf-aaf4-620aec79616b
+    minimum_return_rate: 65c9bc7a-af68-4549-a9c9-70cd73109617
+    modified_by: 7bad8082-4978-4fe8-a018-740257f01637
+    modified_on: '2021-01-01T11:27:48.064811+00:00'
+    notes_on_locations: Here are some notes
+    other_countries_being_considered:
+    - 955f66a0-5d95-e211-a939-e4115bead28a
+    - a75f66a0-5d95-e211-a939-e4115bead28a
+    required_checks_conducted: 81fafe5a-ed32-4f46-bdc5-2cafedf828e8
+    restrictions:
+    - daa293d4-e18e-44af-b139-bd1b4c4a9067
+    - 7dad0891-9174-437d-bb30-b610ac1ecd0a
+    time_horizons:
+    - 29a0a8e9-1c21-432a-bb4f-b9363b46a6aa
+    uk_region_locations:
+    - 844cd12a-6095-e211-a939-e4115bead28a
+    - 8e4cd12a-6095-e211-a939-e4115bead28a
+
+
+- model: opportunity.largecapitalopportunity
+  pk: c064e66a-a6bc-4ad6-9a88-68502d15499c
+  fields:
+    asset_classes:
+    - 096772cb-bd14-4bdf-bd5a-5b430e651048
+    - b4516edf-c151-47d6-9c12-1c2185cacff0
+    - 38c8d05c-2899-4433-a15c-6598d76dd69b
+    construction_risks:
+    - 884deaf6-cb0c-4036-b78c-efd92cb10098
+    created_by: 7bad8082-4978-4fe8-a018-740257f01637
+    created_on: '2020-12-03T11:26:22.243842+00:00'
+    description: Some information
+    dit_support_provided: True
+    estimated_return_rate: 65c9bc7a-af68-4549-a9c9-70cd73109617
+    investment_types:
+    - 4170d99a-02fc-46ee-8fd4-3fe786717708
+    modified_by: 7bad8082-4978-4fe8-a018-740257f01637
+    modified_on: '2021-01-01T11:27:48.064811+00:00'
+    name: Project Zephyr
+    promoters: 
+    - 0f5216e0-849f-11e6-ae22-56b6b6499611
+    required_checks_conducted: 81fafe5a-ed32-4f46-bdc5-2cafedf828e8
+    status: 1386d4f4-732d-44b9-af8e-dffe7dd07d7b
+    time_horizons:
+    - 29a0a8e9-1c21-432a-bb4f-b9363b46a6aa
+    type: c064e66a-a6bc-4ad6-9a88-0bdd69519f55
+    uk_region_locations:
+    - 844cd12a-6095-e211-a939-e4115bead28a
+
+
+- model: opportunity.largecapitalopportunity
+  pk: 744cd12a-6095-e211-a939-e4115bead28a
+  fields:
+    asset_classes:
+    - 38c8d05c-2899-4433-a15c-6598d76dd69b
+    construction_risks:
+    - 884deaf6-cb0c-4036-b78c-efd92cb10098
+    created_by: 7bad8082-4978-4fe8-a018-740257f01637
+    created_on: '2020-12-03T11:26:22.243842+00:00'
+    current_investment_secured: 250000
+    description: New housing and retail developments in a historical setting.
+    dit_support_provided: True
+    estimated_return_rate: 65c9bc7a-af68-4549-a9c9-70cd73109617
+    investment_projects:
+    - 721e2a04-21c3-4172-a321-4368463a4b2d
+    investment_types:
+    - 4170d99a-02fc-46ee-8fd4-3fe786717708
+    lead_dit_relationship_manager: 7bad8082-4978-4fe8-a018-740257f01637
+    modified_by: 7bad8082-4978-4fe8-a018-740257f01637
+    modified_on: '2021-01-01T11:27:48.064811+00:00'
+    name: Camelot Regeneration Scheme
+    promoters: 
+    - 0f5216e0-849f-11e6-ae22-56b6b6499611
+    - a73efeba-8499-11e6-ae22-56b6b6499611
+    opportunity_value: 1000000000
+    opportunity_value_type: edeff484-2bd1-40e6-94ca-0437d6115886
+    other_dit_contacts: 
+    - a80ff5fd-8904-4940-bf96-fe8047e34be5
+    - 379f390a-e083-4a2c-9cea-e3b9a08606a7
+    reasons_for_abandonment: 
+    - 3a38ccff-69c5-40b0-af54-3426ad94e2cb
+    required_checks_conducted: 81fafe5a-ed32-4f46-bdc5-2cafedf828e8
+    required_checks_conducted_by: 7bad8082-4978-4fe8-a018-740257f01637
+    required_checks_conducted_on: '2021-01-01'
+    sources_of_funding: 
+    - 92e533b0-4274-4253-9eea-f7ac6c9ae966
+    status: c14547fb-a8ee-410b-a144-06c882167a41
+    time_horizons:
+    - 29a0a8e9-1c21-432a-bb4f-b9363b46a6aa
+    total_investment_sought: 50000000000
+    type: c064e66a-a6bc-4ad6-9a88-0bdd69519f55
+    uk_region_locations:
+    - 844cd12a-6095-e211-a939-e4115bead28a
+
+
+- model: opportunity.largecapitalopportunity
+  pk: 50a0fa2e-a9b8-4d4b-a209-d6dd6a175aaf
+  fields:
+    created_by: 7bad8082-4978-4fe8-a018-740257f01637
+    created_on: '2020-12-03T11:26:22.243842+00:00'
+    description: Developing new server infrastructure for high-load cloud computing
+    dit_support_provided: True
+    modified_by: 7bad8082-4978-4fe8-a018-740257f01637
+    modified_on: '2021-01-01T11:27:48.064811+00:00'
+    name: Ada Network
+    status: 1386d4f4-732d-44b9-af8e-dffe7dd07d7b
+    type: c064e66a-a6bc-4ad6-9a88-0bdd69519f55

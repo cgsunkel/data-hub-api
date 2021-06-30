@@ -14,6 +14,7 @@ from datahub.core.query_utils import (
     get_front_end_url_expression,
     get_string_agg_subquery,
 )
+from datahub.feature_flag.utils import is_feature_flag_active
 from datahub.metadata.query_utils import get_sector_name_subquery
 from datahub.search.company import CompanySearchApp
 from datahub.search.company.serializers import (
@@ -46,6 +47,7 @@ class SearchCompanyAPIViewMixin:
         'name',
         'sector_descends',
         'country',
+        'area',
         'uk_based',
         'uk_region',
         'export_to_countries',
@@ -82,6 +84,10 @@ class SearchCompanyAPIViewMixin:
         'uk_postcode': [
             'uk_address_postcode',
             'uk_registered_address_postcode',
+        ],
+        'area': [
+            'address.area.id',
+            'registered_address.area.id',
         ],
     }
 
@@ -137,6 +143,8 @@ class PublicSearchCompanyAPIView(HawkResponseSigningMixin, SearchAPIView):
         'uk_region',
         'vat_number',
         'website',
+        'export_segment',
+        'export_sub_segment',
     )
 
     FILTER_FIELDS = (
@@ -199,17 +207,33 @@ class SearchCompanyExportAPIView(SearchCompanyAPIViewMixin, SearchExportAPIView)
             ),
         ),
     )
-    field_titles = {
-        'name': 'Name',
-        'link': 'Link',
-        'sector_name': 'Sector',
-        'address_country__name': 'Country',
-        'uk_region__name': 'UK region',
-        'export_to_countries_list': 'Countries exported to',
-        'future_interest_countries_list': 'Countries of interest',
-        'archived': 'Archived',
-        'created_on': 'Date created',
-        'number_of_employees_value': 'Number of employees',
-        'turnover_value': 'Annual turnover',
-        'upper_headquarter_type_name': 'Headquarter type',
-    }
+
+    @property
+    def field_titles(self):
+        """
+        Returns field titles for CSV export
+
+        There is implicit ordering here, guaranteed for python >= 3.7 to be insertion order
+        This is a property because we don't want it to evaluate prior to database instantiation
+        """
+        field_titles = {
+            'name': 'Name',
+            'link': 'Link',
+            'sector_name': 'Sector',
+            'address_country__name': 'Country',
+        }
+        if is_feature_flag_active('address-area-company-search'):
+            field_titles.update({
+                'address_area__name': 'Area',
+            })
+        field_titles.update({
+            'uk_region__name': 'UK region',
+            'export_to_countries_list': 'Countries exported to',
+            'future_interest_countries_list': 'Countries of interest',
+            'archived': 'Archived',
+            'created_on': 'Date created',
+            'number_of_employees_value': 'Number of employees',
+            'turnover_value': 'Annual turnover',
+            'upper_headquarter_type_name': 'Headquarter type',
+        })
+        return field_titles

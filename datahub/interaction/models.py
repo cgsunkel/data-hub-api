@@ -1,7 +1,6 @@
 import uuid
 
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -183,6 +182,8 @@ class Interaction(ArchivableModel, BaseModel):
     class Theme(models.TextChoices):
         EXPORT = ('export', 'Export')
         INVESTMENT = ('investment', 'Investment')
+        LARGE_CAPITAL_OPPORTUNITY = ('large_capital_opportunity', 'Large capital opportunity')
+        TRADE_AGREEMENT = ('trade_agreement', 'Trade agreement')
         OTHER = ('other', 'Something else')
 
         __empty__ = 'Not set'
@@ -214,14 +215,20 @@ class Interaction(ArchivableModel, BaseModel):
     #         "sha256": "<SHA-256 hash>"
     #     }
     # }
-    source = JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
+    source = models.JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
     date = models.DateTimeField()
+    # `company` field will be replaced by `companies` field.
     company = models.ForeignKey(
         'company.Company',
         related_name='%(class)ss',
         blank=True,
         null=True,
         on_delete=models.CASCADE,
+    )
+    companies = models.ManyToManyField(
+        'company.Company',
+        related_name='company_interactions',
+        blank=True,
     )
     contacts = models.ManyToManyField(
         'company.Contact',
@@ -242,7 +249,7 @@ class Interaction(ArchivableModel, BaseModel):
         null=True,
         on_delete=models.SET_NULL,
     )
-    service_answers = JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
+    service_answers = models.JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
 
     subject = models.TextField()
     notes = models.TextField(max_length=10000, blank=True)
@@ -270,6 +277,17 @@ class Interaction(ArchivableModel, BaseModel):
         on_delete=models.CASCADE,
         help_text='For interactions only.',
     )
+
+    # Large capital opportunity
+    large_capital_opportunity = models.ForeignKey(
+        'opportunity.LargeCapitalOpportunity',
+        related_name='%(class)ss',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        help_text='For interactions only.',
+    )
+
     # Grants
     grant_amount_offered = models.DecimalField(
         null=True, blank=True, max_digits=19, decimal_places=2,
@@ -294,6 +312,9 @@ class Interaction(ArchivableModel, BaseModel):
     policy_feedback_notes = models.TextField(blank=True, default='')
 
     were_countries_discussed = models.BooleanField(null=True)
+
+    has_related_trade_agreements = models.BooleanField(null=True, blank=True)
+    related_trade_agreements = models.ManyToManyField('metadata.TradeAgreement', blank=True)
 
     @property
     def is_event(self):

@@ -139,6 +139,10 @@ class TestAddServiceDelivery(APITestMixin):
                 'id': str(company.pk),
                 'name': company.name,
             },
+            'companies': [{
+                'id': str(company.pk),
+                'name': company.name,
+            }],
             'contacts': [{
                 'id': str(contact.pk),
                 'name': contact.name,
@@ -175,6 +179,8 @@ class TestAddServiceDelivery(APITestMixin):
             'archived_on': None,
             'archived_reason': None,
             'company_referral': None,
+            'large_capital_opportunity': None,
+            'related_trade_agreements': [],
         }
 
     @pytest.mark.parametrize(

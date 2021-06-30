@@ -26,7 +26,6 @@ from datahub.event.test.factories import EventFactory
 from datahub.interaction.models import CommunicationChannel, Interaction
 from datahub.interaction.test.utils import random_service
 
-
 FROZEN_DATETIME = datetime(2020, 1, 24, 16, 26, 50, tzinfo=utc)
 
 
@@ -288,6 +287,12 @@ class TestCompleteCompanyReferral(APITestMixin):
                 'id': str(interaction.company.pk),
                 'name': interaction.company.name,
             },
+            'companies': [
+                {
+                    'id': str(interaction.company.pk),
+                    'name': interaction.company.name,
+                },
+            ],
             'contacts': [
                 {
                     'id': str(contact.pk),
@@ -333,6 +338,8 @@ class TestCompleteCompanyReferral(APITestMixin):
                 'created_on': format_date_or_datetime(referral.created_on),
                 'recipient': format_expected_adviser(referral.recipient),
             },
+            'large_capital_opportunity': None,
+            'related_trade_agreements': [],
         }
 
         assert referral.status == CompanyReferral.Status.COMPLETE
@@ -402,7 +409,7 @@ class TestCompleteCompanyReferral(APITestMixin):
 
         assert referral.interaction_id
         interaction_data = Interaction.objects.values().get(pk=referral.interaction_id)
-        assert interaction_data == {
+        expected_interaction_data = {
             # Automatically set fields
             'company_id': referral.company_id,
             'created_by_id': self.user.pk,
@@ -437,7 +444,10 @@ class TestCompleteCompanyReferral(APITestMixin):
             'archived_documents_url_path': '',
             'archived_on': None,
             'archived_reason': None,
+            'large_capital_opportunity_id': None,
+            'has_related_trade_agreements': None,
         }
+        assert interaction_data == expected_interaction_data
 
         assert list(referral.interaction.contacts.all()) == [contact]
 

@@ -89,6 +89,21 @@
     - - export_largecapitalinvestorprofile
       - investor_profile
       - largecapitalinvestorprofile
+    - - add_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - change_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - delete_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - view_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - export_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
   model: auth.group
 - fields:
     name: DA
@@ -231,6 +246,21 @@
     - - export_largecapitalinvestorprofile
       - investor_profile
       - largecapitalinvestorprofile
+    - - add_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - change_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - delete_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - view_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - export_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
   model: auth.group
 - fields:
     name: DIT_staff
@@ -472,6 +502,21 @@
     - - export_largecapitalinvestorprofile
       - investor_profile
       - largecapitalinvestorprofile
+    - - add_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - change_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - delete_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - view_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
+    - - export_largecapitalopportunity
+      - opportunity
+      - largecapitalopportunity
     - - view_companyexportcountry
       - company
       - companyexportcountry
@@ -2539,7 +2584,7 @@
 - fields:
     country: 80756b9a-5d95-e211-a939-e4115bead28a
     disabled_on: null
-    name: IG - SR - Institutional  Investment
+    name: Capital Investment team
     role: 5c329c18-6095-e211-a939-e4115bead28a
     uk_region: 874cd12a-6095-e211-a939-e4115bead28a
     tags: []

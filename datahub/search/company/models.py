@@ -4,7 +4,7 @@ from elasticsearch_dsl import Boolean, Date, Keyword, Object, Text
 
 from datahub.company.models import CompanyExportCountry
 from datahub.search import dict_utils, fields
-from datahub.search.models import BaseESModel, DEFAULT_MAPPING_TYPE
+from datahub.search.models import BaseESModel
 
 
 def _adviser_field_with_indexed_id():
@@ -60,6 +60,8 @@ class Company(BaseESModel):
     duns_number = Keyword()
     website = Text()
     latest_interaction_date = Date()
+    export_segment = Text()
+    export_sub_segment = Text()
 
     COMPUTED_MAPPINGS = {
         'address': partial(dict_utils.address_dict, prefix='address'),
@@ -107,14 +109,8 @@ class Company(BaseESModel):
 
         'address.country.name.trigram',
         'address.postcode.trigram',
+        'address.area.name.trigram',
         'registered_address.country.name.trigram',
         'registered_address.postcode.trigram',
+        'registered_address.area.name.trigram',
     )
-
-    class Meta:
-        """Default document meta data."""
-
-        doc_type = DEFAULT_MAPPING_TYPE
-
-    class Index:
-        doc_type = DEFAULT_MAPPING_TYPE
