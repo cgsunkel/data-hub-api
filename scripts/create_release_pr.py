@@ -32,7 +32,7 @@ from script_utils.git import (
 from script_utils.news_fragments import list_news_fragments
 from script_utils.versioning import get_current_version
 
-GITHUB_BASE_REPO_URL = 'https://github.com/uktrade/data-hub-api'
+GITHUB_BASE_REPO_URL = 'https://github.com/cgsunkel/data-hub-api'
 RELEASE_GUIDE_URL = (
     'https://github.com/uktrade/data-hub-api/blob/develop/docs/'
     'How%20to%20prepare%20a%20release.md'

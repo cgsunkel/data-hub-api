@@ -34,7 +34,7 @@ from script_utils.versioning import (
     VERSION_FILE_PATH,
 )
 
-BASE_GITHUB_REPO_URL = 'https://github.com/uktrade/data-hub-api'
+BASE_GITHUB_REPO_URL = 'https://github.com/cgsunkel/data-hub-api'
 
 parser = argparse.ArgumentParser(
     description='Bump the version, update the changelog and open a PR.',

@@ -32,7 +32,7 @@ from script_utils.changelog import extract_version_changelog
 from script_utils.command import CommandError, print_error
 from script_utils.git import get_file_contents, remote_tag_exists
 
-GITHUB_RELEASE_API_URL = 'https://api.github.com/repos/uktrade/data-hub-api/releases'
+GITHUB_RELEASE_API_URL = 'https://api.github.com/repos/cgsunkel/data-hub-api/releases'
 
 
 # Currently no real arguments – just used for --help etc.
