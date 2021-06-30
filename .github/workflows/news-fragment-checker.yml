@@ -3,7 +3,7 @@
 name: Check names of news fragments
 
 on:
-  pull_request
+  pull_request:
     branches:
       - develop
 
