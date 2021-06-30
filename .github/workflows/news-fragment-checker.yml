@@ -19,11 +19,11 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
-     
-     - name: Install towncrier
-       run: |
-            python -m pip install towncrier
-     
-     - name: Generate list of news fragments
-       run: |
+      
+      - name: Install towncrier
+        run: |
+          python -m pip install towncrier
+      
+      - name: Generate list of news fragments
+        run: |
           python scripts/script_utils/news_fragments.py
